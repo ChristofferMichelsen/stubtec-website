@@ -156,9 +156,9 @@ jobs:
                   console.log('ACCESSIBILITY',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,8).map(n=>({target:n.target,summary:n.failureSummary,html:n.html}))}))));
                   if(axe.violations.some(v=>v.impact==='serious'||v.impact==='critical'))throw Error('Critical accessibility violation');
                   const gallery=await page.goto('http://127.0.0.1:3177/ressourcer',{waitUntil:'load'});
-                  if(gallery.status()!==200||await page.locator('.resource-grid a[href^="/#diagram-tab-"]').count()!==5)throw Error('Missing readable resource links');
+                  if(gallery.status()!==200||(await page.$('.resource-grid a[href^="/#diagram-tab-"]')).length!==5)throw Error('Missing readable resource links');
                   await page.goto('http://127.0.0.1:3177/#diagram-tab-framework',{waitUntil:'load'});
-                  if(await page.locator('#diagram-tab-framework').getAttribute('aria-selected')!=='true')throw Error('Deep-linked diagram not selected');
+                  if(await page.$eval('#diagram-tab-framework',el=>el.getAttribute('aria-selected'))!=='true')throw Error('Deep-linked diagram not selected');
                   const contact=await page.goto('http://127.0.0.1:3177/kontakt',{waitUntil:'load'});
                   if(contact.status()!==200)throw Error('Contact inaccessible');
                   const form=await page.$('#inquiry-form');if(!form)throw Error('Contact form missing');
