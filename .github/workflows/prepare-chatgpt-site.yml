@@ -1,0 +1,70 @@
+name: Prepare ChatGPT Site for existing Azure deployment
+
+on:
+  push:
+    branches: [chatgpt-site-capture-20261017]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Prepare captured static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          root=Path('site-capture/mirror/stubtec-plm.flifoffer.chatgpt.site')
+          assert (root/'index.html').is_file()
+          assert (root/'styles.css').is_file()
+          assert (root/'site.js').is_file()
+          out=Path('public')
+          out.mkdir(exist_ok=True)
+          html=(root/'index.html').read_text()
+          # Remove the Cloudflare security challenge that is injected by the source host.
+          html=html[:html.rfind('<script>(function(){function c()')] + '</body>\n</html>\n' if '<script>(function(){function c()' in html else html
+          assert '<!doctype html>' in html.lower()
+          assert 'StubTEC PLM' in html
+          (out/'index.html').write_text(html)
+          shutil.copy2(root/'styles.css',out/'styles.css')
+          shutil.copy2(root/'site.js',out/'site.js')
+          shutil.copytree(root/'assets',out/'assets',dirs_exist_ok=True)
+          assert len(list((out/'assets/diagrams').glob('*.svg'))) == 5
+          config=Path('next.config.ts')
+          config.write_text("""import type { NextConfig } from 'next';
+          const config: NextConfig = {
+            output: 'standalone',
+            poweredByHeader: false,
+            async rewrites() {
+              return { beforeFiles: [{ source: '/', destination: '/index.html' }] };
+            },
+          };
+          export default config;
+          """)
+          print('Built static homepage and all 5 diagrams from public ChatGPT Site')
+          PY
+      - name: Build Next.js standalone for Azure
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Commit verified site into review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public next.config.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "Port published ChatGPT Site to Azure Next.js host"
+            git push origin HEAD:chatgpt-site-capture-20261017
+          fi
