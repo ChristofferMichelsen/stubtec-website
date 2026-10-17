@@ -1,0 +1,101 @@
+name: StubTEC read-only live site audit
+on:
+  push:
+    branches: [audit-stubtec-20261017]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Check current and legacy URL responses
+        shell: bash
+        run: |
+          for URL in \
+            https://www.stubtec.dk/ \
+            https://stubtec.dk/ \
+            https://www.stubtec.dk/robots.txt \
+            https://www.stubtec.dk/sitemap.xml \
+            https://www.stubtec.dk/aras.html \
+            https://www.stubtec.dk/study-week.html \
+            https://www.stubtec.dk/services.html \
+            https://www.stubtec.dk/about.html \
+            https://www.stubtec.dk/resources.html \
+            https://www.stubtec.dk/privacy.html; do
+            OUTPUT=$(curl -L -sS --max-time 25 --connect-timeout 10 -H 'Cache-Control: no-cache' \
+              -o /tmp/stubtec-response -w '%{http_code} %{url_effective} %{content_type} %{size_download}' "$URL" 2>&1 || true)
+            echo "URL_RESULT $URL -> $OUTPUT"
+          done
+          echo "APEX_SSL"
+          echo | openssl s_client -connect stubtec.dk:443 -servername stubtec.dk 2>/dev/null | openssl x509 -noout -subject -enddate || true
+      - name: Install browser inspection dependencies
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock puppeteer-core @axe-core/puppeteer --no-audit --no-fund
+          CHROME=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
+          echo "CHROME_PATH=$CHROME" >> "$GITHUB_ENV"
+          echo "Chrome executable: $CHROME"
+      - name: Mobile and desktop layout and accessibility
+        shell: bash
+        run: |
+          mkdir -p audit-screenshots
+          node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const { AxePuppeteer }=require('@axe-core/puppeteer');
+          (async()=>{
+            if(!process.env.CHROME_PATH){console.log('CHROME_UNAVAILABLE');return}
+            const browser=await puppeteer.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
+            try{
+              for(const width of [360,393,768,1440]){
+                const page=await browser.newPage();
+                await page.setViewport({width,height:850,deviceScaleFactor:1,isMobile:width<500,hasTouch:width<500});
+                let errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+                try{
+                  const r=await page.goto('https://www.stubtec.dk/?audit=responsive-'+width,{waitUntil:'domcontentloaded',timeout:45000});
+                  await page.evaluate(()=>document.querySelectorAll('img[loading="lazy"]').forEach(im=>im.loading='eager'));
+                  await new Promise(resolve=>setTimeout(resolve,1200));
+                  let m=await page.evaluate(()=>{
+                    const d=document.documentElement,h=document.querySelector('h1');
+                    const imgs=[...document.images],small=[...document.querySelectorAll('.hero a,.site-header a,.site-header button')].filter(e=>{let b=e.getBoundingClientRect();return b.width>0&&b.height>0&&b.height<40}).map(e=>({text:e.textContent.trim().slice(0,30),height:Math.round(e.getBoundingClientRect().height)}));
+                    return {title:document.title,lang:d.lang,cssInline:!!document.querySelector('style[data-stubtec-inline-css]'),jsInline:!!document.querySelector('script[data-stubtec-inline-js]'),font:getComputedStyle(document.body).fontFamily,h1Font:getComputedStyle(h).fontSize,h1s:document.querySelectorAll('h1').length,viewportWidth:innerWidth,scrollWidth:d.scrollWidth,overflowPx:Math.max(0,d.scrollWidth-innerWidth),images:imgs.length,brokenImages:imgs.filter(im=>im.complete&&im.naturalWidth===0).map(im=>im.currentSrc),smallTargets:small,diagrams:document.querySelectorAll('[data-diagram-target]').length,lensTabs:document.querySelectorAll('[data-lens]').length,visiblePanels:[...document.querySelectorAll('.diagram-panel')].filter(e=>!e.hidden).length,canonical:!!document.querySelector('link[rel="canonical"]'),og:document.querySelectorAll('meta[property^="og:"]').length,schema:document.querySelectorAll('script[type="application/ld+json"]').length};
+                  });
+                  let menuOpen=null;
+                  if(width<500){const btn=await page.$('.menu-button');if(btn){await btn.click();menuOpen=await page.$eval('.menu-button',b=>b.getAttribute('aria-expanded'))}}
+                  await page.screenshot({path:'audit-screenshots/'+width+'.png',fullPage:width===393});
+                  console.log('RESPONSIVE_RESULT',JSON.stringify({width,http:r.status(),...m,menuOpen,errors:errors.slice(0,8)}));
+                  if(width===393){try{let a=await new AxePuppeteer(page).analyze();console.log('AXE_RESULT',JSON.stringify(a.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,2).map(n=>n.target)}))))}catch(e){console.log('AXE_FAILED',e.message)}}
+                }catch(e){console.log('BROWSER_FAILED',width,e.message)}
+                await page.close();
+              }
+            }finally{await browser.close()}
+          })().catch(e=>{console.log('BROWSER_FATAL',e.message);process.exitCode=1});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stubtec-audit-screenshots
+          path: audit-screenshots/
+          if-no-files-found: ignore
+          retention-days: 2
+      - name: Mobile Lighthouse audit
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "$CHROME_PATH" ]; then
+            timeout 150s npx -y lighthouse@12.8.2 "https://www.stubtec.dk/?audit=seo-lh" \
+              --chrome-path="$CHROME_PATH" --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --only-categories=performance,seo,accessibility,best-practices \
+              --form-factor=mobile --screenEmulation.mobile=true \
+              --output=json --output-path=/tmp/lh-audit.json --quiet || true
+            if [ -s /tmp/lh-audit.json ]; then
+              node -e "const d=require('/tmp/lh-audit.json'); console.log('LH_SCORES',JSON.stringify(Object.fromEntries(Object.entries(d.categories).map(([k,v])=>[k,Math.round(v.score*100)])))); console.log('LH_WEB_VITALS',JSON.stringify(Object.fromEntries(['first-contentful-paint','largest-contentful-paint','total-blocking-time','cumulative-layout-shift','speed-index'].map(k=>[k,d.audits[k]?.displayValue])))); console.log('LH_FAILED',JSON.stringify(Object.entries(d.audits).filter(([k,v])=>v.score!==null&&v.score<1&&v.weight!==0).map(([k,v])=>({id:k,score:v.score,title:v.title})).slice(0,30)))"
+            fi
+          fi
