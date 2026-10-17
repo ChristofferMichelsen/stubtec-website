@@ -1,0 +1,33 @@
+name: Check StubTEC apex domain SSL ownership
+on:
+  push:
+    branches: [website-seo-ux-20261017]
+    paths:
+      - '.github/workflows/check-apex-ssl.yml'
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  investigate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log into existing Azure subscription
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E2D28654BB4B430CB6FDEAA2FF550BFE }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_04210B6B62BD4C1BBEC9B64D32146402 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2E9AC709A33B4A5783CB4CE44A879679 }}
+      - name: Inspect domain and certificate settings (read only)
+        shell: bash
+        run: |
+          set +e
+          echo "HOSTNAME_BINDINGS"
+          az webapp config hostname list -g stubtec-nextjs-staging_group --webapp-name stubtec-nextjs-staging --query "[].{name:name,sslState:sslState,thumbprint:thumbprint,hostNameType:hostNameType}" -o json
+          echo "APP_HOSTNAMES"
+          az webapp show -g stubtec-nextjs-staging_group -n stubtec-nextjs-staging --query "{hostNames:hostNames,defaultHostName:defaultHostName,kind:kind}" -o json
+          echo "CERTIFICATES"
+          az webapp config ssl list -g stubtec-nextjs-staging_group --query "[].{name:name,subjectName:subjectName,expirationDate:expirationDate,thumbprint:thumbprint}" -o json
+          echo "SSL_BINDINGS"
+          az webapp config ssl binding list -g stubtec-nextjs-staging_group --name stubtec-nextjs-staging --query "[].{name:name,sslState:sslState,thumbprint:thumbprint}" -o json
+          echo "APEX_CERT"
+          echo | openssl s_client -servername stubtec.dk -connect stubtec.dk:443 2>/dev/null | openssl x509 -noout -subject -dates
