@@ -118,7 +118,6 @@ jobs:
           set +e
           echo "AZURE_HOSTNAMES"
           az webapp config hostname list -g stubtec-nextjs-staging_group --webapp-name stubtec-nextjs-staging --query "[].{host:name,sslState:sslState,thumbprint:thumbprint}" -o json || true
-          if ! az webapp config hostname list -g stubtec-nextjs-staging_group --webapp-name stubtec-nextjs-staging --query "[?name=='stubtec.dk'].name" -o tsv | grep -q '^stubtec.dk
           echo "APEX_SSL_EXPIRATION"
           echo | openssl s_client -servername stubtec.dk -connect stubtec.dk:443 2>/dev/null | openssl x509 -noout -subject -enddate || true
 
@@ -187,102 +186,7 @@ jobs:
                 VERIFIED=1
                 break
               fi
-              echo "Warming SEO page $PAGE ($ATTEMPT/12, HTTP $STATUS)"
-              sleep 7
-            done
-            if [ "$VERIFIED" != 1 ]; then
-              echo "::error::SEO page $PAGE still failed after warmup (HTTP $STATUS)"
-              exit 1
-            fi
-            echo "PASS: $PAGE has HTTP 200 and canonical"
-          done
-          for LEGACY in aras.html services.html about.html study-week.html resources.html privacy.html AboutUs.html ContactUs.html; do
-            STATUS=$(curl --silent --show-error --connect-timeout 10 --max-time 25 -o /dev/null -w '%{http_code}' "https://www.stubtec.dk/$LEGACY" || true)
-            if [ "$STATUS" != 301 ]; then
-              echo "::error::Expected 301 from $LEGACY; got HTTP $STATUS"
-              exit 1
-            fi
-          done
-          for META in robots.txt sitemap.xml; do
-            STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -o /tmp/meta-body -w '%{http_code}' "https://www.stubtec.dk/$META" || true)
-            if [ "$STATUS" != 200 ]; then
-              echo "::error::SEO metadata $META failed (HTTP $STATUS)"
-              exit 1
-            fi
-          done
-          echo "PASS: all SEO landing pages, redirects and crawl metadata"
-; then
-            echo "::warning::The apex stubtec.dk is not bound to this Azure App Service. Its expired certificate must be renewed at the external redirect/hosting provider, or the domain must be migrated with DNS verification."
-          fi
-          echo "APEX_SSL_EXPIRATION"
-          echo | openssl s_client -servername stubtec.dk -connect stubtec.dk:443 2>/dev/null | openssl x509 -noout -subject -enddate || true
-
-      - name: Verify current release on staging and public domain
-        shell: bash
-        run: |
-          set -euo pipefail
-          for HOST in "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/" "https://www.stubtec.dk/"; do
-            echo "Checking $HOST"
-            OK=0
-            for attempt in $(seq 1 16); do
-              STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
-              if [ "$STATUS" = "200" ] && grep -q 'PLM-konsulent &amp; Aras Innovator | CAD/PDM–ERP | StubTEC' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-css' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-js' /tmp/stubtec-check.html && [ "$(wc -c < /tmp/stubtec-check.html)" -gt 60000 ]; then
-                echo "PASS: $HOST serves the new StubTEC PLM homepage."
-                OK=1
-                break
-              fi
-              echo "Attempt $attempt/16: HTTP $STATUS; current page includes:"
-              grep -o -m1 -E 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow|Connect engineering|Control complexity' /tmp/stubtec-check.html || true
-              sleep 12
-            done
-            if [ "$OK" != 1 ]; then
-              echo "::error::$HOST still does not serve the new StubTEC PLM homepage after deployment and restart."
-              exit 1
-            fi
-          done
-
-          echo "Verifying inlined CSS/JavaScript plus separately served SVG and photo assets."
-          for HOST in "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/" "https://www.stubtec.dk/"; do
-            for NAME in assets/diagrams/digital-thread.svg assets/diagrams/lifecycle.svg assets/diagrams/people-process-tools.svg assets/diagrams/conventional-to-aras.svg assets/diagrams/aras-framework.svg assets/christoffer-architecture-review.jpg; do
-              for ATTEMPT in 1 2 3 4; do
-                CODE=$(curl --location --silent --show-error --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' -D /tmp/asset-headers.txt -o /tmp/stubtec-asset -w '%{http_code}' "${HOST}static-resource?name=${NAME}&verify-release=${GITHUB_SHA}" || true)
-                if [ "$CODE" = "200" ]; then break; fi
-                sleep 5
-              done
-              if [ "$CODE" != "200" ]; then
-                echo "::error::Missing asset ${HOST}${NAME}: HTTP $CODE"
-                exit 1
-              fi
-              case "$NAME" in
-                *.css) EXPECTED="text/css" ;;
-                *.js) EXPECTED="text/javascript" ;;
-                *.svg) EXPECTED="image/svg+xml" ;;
-                *.jpg) EXPECTED="image/jpeg" ;;
-              esac
-              if ! grep -qi "content-type: $EXPECTED" /tmp/asset-headers.txt; then
-                echo "::error::Unexpected content type for ${HOST}${NAME}"
-                cat /tmp/asset-headers.txt
-                exit 1
-              fi
-              SIZE=$(wc -c < /tmp/stubtec-asset)
-              if [ "$SIZE" -lt 1000 ]; then
-                echo "::error::Asset ${HOST}${NAME} unexpectedly small: $SIZE bytes"
-                exit 1
-              fi
-              echo "PASS: ${HOST}${NAME} ($SIZE bytes, $EXPECTED)"
-            done
-          done
-
-          echo "Verify published SEO pages and legacy redirects"
-          for PAGE in aras-innovator plm-arkitektur solidworks-pdm-aras-integration plm-study-week aras-quickstart integration-pilot cases ressourcer om kontakt privatliv; do
-            VERIFIED=0
-            for ATTEMPT in $(seq 1 12); do
-              STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' -o /tmp/stubtec-page.html -w '%{http_code}' "https://www.stubtec.dk/$PAGE?verify-release=$GITHUB_SHA" || true)
-              if [ "$STATUS" = 200 ] && grep -q '<link rel="canonical"' /tmp/stubtec-page.html; then
-                VERIFIED=1
-                break
-              fi
-              echo "Warming SEO page $PAGE ($ATTEMPT/12, HTTP $STATUS)"
+              echo "Waiting for $PAGE after Azure restart (attempt $ATTEMPT/12, HTTP $STATUS)"
               sleep 7
             done
             if [ "$VERIFIED" != 1 ]; then
