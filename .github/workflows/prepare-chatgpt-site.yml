@@ -66,6 +66,7 @@ jobs:
           git add public next.config.ts
           if ! git diff --cached --quiet; then
             git commit -m "Port published ChatGPT Site to Azure Next.js host"
+            git reset --hard HEAD
             git fetch origin chatgpt-site-capture-20261017
             git rebase origin/chatgpt-site-capture-20261017
             git push origin HEAD:chatgpt-site-capture-20261017
