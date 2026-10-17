@@ -1,0 +1,78 @@
+name: Verify live StubTEC diagram gallery
+on:
+  push:
+    branches: [live-test-20261017]
+    paths: [.github/workflows/verify-live-diagram-gallery.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser inspector
+        run: npm install --no-save --no-package-lock puppeteer-core --no-audit --no-fund
+      - name: Verify live mobile carousel and desktop tabs
+        shell: bash
+        run: |
+          mkdir -p gallery-live
+          node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const assert=require('node:assert/strict');
+          const wait=t=>new Promise(r=>setTimeout(r,t));
+          (async()=>{
+            const browser=await puppeteer.launch({headless:true,executablePath:'/usr/bin/google-chrome-stable',args:['--no-sandbox','--disable-dev-shm-usage']});
+            try{
+              for(const width of [393,1440]){
+                const page=await browser.newPage();
+                await page.setViewport({width,height:900,deviceScaleFactor:1,isMobile:width<500,hasTouch:width<500});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                const res=await page.goto('https://www.stubtec.dk/?diagram-live-check=20261017',{waitUntil:'networkidle2',timeout:45000});
+                assert.equal(res.status(),200);
+                const d=await page.evaluate(()=>{
+                  const stage=document.querySelector('.diagram-stage'),panels=[...document.querySelectorAll('.diagram-panel')],rect=panels[0].querySelector('.diagram-frame').getBoundingClientRect();
+                  return {width:innerWidth,pageWidth:document.documentElement.scrollWidth,dots:document.querySelectorAll('[data-diagram-dot]').length,toolbar:getComputedStyle(document.querySelector('.diagram-mobile-toolbar')).display,frameW:Math.round(rect.width),frameH:Math.round(rect.height),stageHeight:Math.round(stage.getBoundingClientRect().height),visiblePanels:panels.filter(x=>!x.hidden).length,images:[...document.querySelectorAll('.diagram-panel img')].map(i=>({loaded:i.complete&&i.naturalWidth>0,url:i.currentSrc})),current:document.querySelector('[data-diagram-current]').textContent};
+                });
+                console.log('LIVE_DIAGRAM',JSON.stringify(d));
+                assert.equal(d.pageWidth,width);
+                assert.equal(d.dots,5);
+                assert.equal(d.images.filter(i=>!i.loaded).length,0);
+                if(width===393){
+                  assert.equal(d.toolbar,'flex');
+                  assert(Math.abs(d.frameW/d.frameH-16/9)<.04);
+                  assert(d.stageHeight<580);
+                  assert.equal(d.visiblePanels,5);
+                  await page.$eval('.diagram-stage',e=>e.scrollIntoView({block:'center',behavior:'instant'}));
+                  await wait(350);
+                  await page.screenshot({path:'gallery-live/mobile.png'});
+                  await page.click('[data-diagram-next]');
+                  await page.waitForFunction(()=>document.querySelector('[data-diagram-current]').textContent==='02',{timeout:5000});
+                  await wait(800);
+                  const after=await page.$eval('.diagram-stage',e=>({scroll:e.scrollLeft,client:e.clientWidth}));
+                  assert(after.scroll>after.client*.5);
+                  console.log('LIVE_NEXT_OK',JSON.stringify(after));
+                  await page.screenshot({path:'gallery-live/mobile-second.png'});
+                }else{
+                  assert.equal(d.toolbar,'none');
+                  assert.equal(d.visiblePanels,1);
+                  await page.click('#diagram-tab-lifecycle');
+                  assert(await page.$eval('#diagram-lifecycle',e=>!e.hidden));
+                  console.log('LIVE_DESKTOP_TABS_OK');
+                }
+                assert.deepEqual(errors,[]);
+                await page.close();
+              }
+              console.log('LIVE_GALLERY_VERIFIED');
+            }finally{await browser.close()}
+          })().catch(e=>{console.error('LIVE_GALLERY_FAILURE',e.stack||e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-gallery-mobile-screenshots
+          path: gallery-live/
+          if-no-files-found: ignore
+          retention-days: 2
