@@ -1,0 +1,31 @@
+name: Diagnose missing production CSS
+
+on:
+  push:
+    branches: [diagnose-missing-styles-20261017]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect public pages and static assets
+        shell: bash
+        run: |
+          set -uo pipefail
+          for HOST in "https://www.stubtec.dk" "https://stubtec.dk" "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net"; do
+            echo "====== HOST $HOST ======"
+            for PATHNAME in "/" "/styles.css" "/site.js" "/assets/diagrams/digital-thread.svg" "/index.html"; do
+              echo "--- $PATHNAME ---"
+              CODE=$(curl -sS -L --max-time 20 --connect-timeout 10 -H 'Cache-Control: no-cache' -D /tmp/stubtec-headers -o /tmp/stubtec-body -w '%{http_code}' "$HOST$PATHNAME?diagnose=20261017" || true)
+              echo "HTTP_CODE=$CODE"
+              grep -Ei '^(content-type|content-length|location|cache-control|x-powered-by|server):' /tmp/stubtec-headers || true
+              wc -c /tmp/stubtec-body || true
+              head -c 180 /tmp/stubtec-body || true
+              printf '\n'
+            done
+          done
