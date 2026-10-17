@@ -95,17 +95,17 @@ jobs:
             OK=0
             for attempt in $(seq 1 16); do
               STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
-              if [ "$STATUS" = "200" ] && grep -q 'Hej world' /tmp/stubtec-check.html; then
-                echo "PASS: $HOST returns Hej world and Next.js styling."
+              if [ "$STATUS" = "200" ] && grep -q 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow' /tmp/stubtec-check.html; then
+                echo "PASS: $HOST serves the new StubTEC PLM homepage."
                 OK=1
                 break
               fi
               echo "Attempt $attempt/16: HTTP $STATUS; current page includes:"
-              grep -o -m1 -E 'Hej world|Connect engineering|Control complexity' /tmp/stubtec-check.html || true
+              grep -o -m1 -E 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow|Connect engineering|Control complexity' /tmp/stubtec-check.html || true
               sleep 12
             done
             if [ "$OK" != 1 ]; then
-              echo "::error::$HOST still does not serve Hej world after deployment and restart."
+              echo "::error::$HOST still does not serve the new StubTEC PLM homepage after deployment and restart."
               exit 1
             fi
           done
