@@ -1,0 +1,24 @@
+name: Inspect live marketing routes after release
+on:
+  push:
+    branches: [website-seo-ux-20261017]
+    paths: ['.github/workflows/diagnose-live-marketing.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe both Azure and public domain paths
+        shell: bash
+        run: |
+          set +e
+          for HOST in "https://www.stubtec.dk" "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net"; do
+            for PATHNAME in "/" "/aras-innovator" "/plm-arkitektur" "/kontakt" "/robots.txt" "/sitemap.xml" "/aras.html" "/index.html"; do
+              OUT=$(curl --silent --show-error -L --connect-timeout 10 --max-time 25 -o /tmp/probe-body -D /tmp/probe-header -w '%{http_code} %{url_effective} %{content_type} %{size_download}' "$HOST$PATHNAME?probe=20261017" 2>&1 || true)
+              echo "PROBE $HOST$PATHNAME -> $OUT"
+              grep -Ei '^(location|x-powered-by|server|content-type|content-encoding):' /tmp/probe-header | tail -8 || true
+              head -c 100 /tmp/probe-body || true
+              printf '\n'
+            done
+          done
