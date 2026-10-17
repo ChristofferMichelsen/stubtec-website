@@ -148,7 +148,8 @@ jobs:
                 if(!switched)throw Error('Tab interaction broken '+width);
                 if([393,768,1440].includes(width)){
                   const fs=require('fs');fs.mkdirSync('responsive-previews',{recursive:true});
-                  await page.locator('.diagram-library').screenshot({path:'responsive-previews/diagram-library-'+width+'.png'});
+                  const diagramElement=await page.$('.diagram-library');
+                  await diagramElement.screenshot({path:'responsive-previews/diagram-library-'+width+'.png'});
                 }
                 if(width===393){
                   const axe=await new AxePuppeteer(page).analyze();
