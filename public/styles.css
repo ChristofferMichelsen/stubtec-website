@@ -244,7 +244,7 @@ h3 { letter-spacing: -0.025em; }
   background-size: 40px 40px;
 }
 .diagram-frame.light-diagram { background: #f3f5f7; }
-.diagram-frame img { display: block; width: 100%; max-height: 660px; object-fit: contain; }
+.diagram-frame img { display: block; width: 100%; height: auto; max-height: 660px; object-fit: contain; }
 .diagram-panel .diagram-caption {
   display: grid;
   grid-template-columns: 0.8fr 1.15fr auto;
@@ -506,4 +506,115 @@ h3 { letter-spacing: -0.025em; }
   .diagram-panel .diagram-caption h3, .diagram-panel .diagram-caption a { color: #111; }
   .study-copy { position: static; }
   a { text-decoration: underline; }
+}
+
+
+/* Responsive reference diagrams.
+   The original SVG artwork remains available as full-size source material,
+   while narrower screens render the SAME model as readable HTML cards.
+   Explicit height:auto prevents the 900px HTML image height attribute
+   from producing giant empty object-fit letterboxing on small screens. */
+.diagram-mobile { display: none; }
+.diagram-mobile h4, .diagram-mobile p { margin: 0; }
+.diagram-mobile .dm-heading { margin-bottom: clamp(22px, 3vw, 36px); }
+.diagram-mobile .dm-kicker, .diagram-mobile .dm-section-label {
+  display: block;
+  font-family: var(--mono);
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: .72rem;
+  color: #ed747a;
+}
+.diagram-mobile .dm-heading h4 {
+  margin: 10px 0;
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  line-height: 1.12;
+  color: var(--white);
+  letter-spacing: -.035em;
+}
+.diagram-mobile .dm-heading p, .diagram-mobile .dm-note {
+  max-width: 64ch;
+  color: #c5cfdc;
+  font-size: .9rem;
+  line-height: 1.65;
+}
+.diagram-mobile .dm-section { margin-top: 14px; }
+.diagram-mobile .dm-section-label { margin-bottom: 10px; color: #aebacc; }
+.diagram-mobile .dm-grid,
+.diagram-mobile .dm-stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.diagram-mobile .dm-card {
+  min-width: 0;
+  padding: 16px;
+  background: #16212e;
+  color: #f3f5f7;
+  border: 1px solid #354356;
+  border-left: 3px solid #6aa2eb;
+}
+.diagram-mobile .dm-card strong { display: block; margin: 3px 0 5px; font-size: 1rem; line-height: 1.28; }
+.diagram-mobile .dm-card small { display: block; color: #9bb1ca; font-family: var(--mono); font-size: .7rem; line-height: 1.45; letter-spacing: .025em; }
+.diagram-mobile .dm-card p { color: #c7d1dc; font-size: .84rem; line-height: 1.52; }
+.diagram-mobile .dm-card ul { padding-left: 18px; margin: 8px 0 0; color: #e2e8ef; font-size: .84rem; line-height: 1.55; }
+.diagram-mobile .dm-core { background: #241821; border-color: #8f3845; border-left-color: #e04d59; }
+.diagram-mobile .dm-core small { color: #f5a7ad; }
+.diagram-mobile .dm-consumer { border-left-color: #e9be48; }
+.diagram-mobile .dm-consumer small { color: #ead08d; }
+.diagram-mobile .dm-divider { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 9px 6px 2px; color: #c5d1e1; font-size: .78rem; font-weight: 700; text-align: center; }
+.diagram-mobile .dm-divider span { color: #ed747a; font-size: 1.35rem; line-height: 1; }
+.diagram-mobile .dm-footer { margin-top: 16px; border: 1px dashed #59697f; padding: 12px 16px; }
+.diagram-mobile .dm-footer strong { color: #f1f3f5; font-size: .87rem; }
+.diagram-mobile .dm-footer p { color: #c5cfdc; font-size: .8rem; }
+.diagram-mobile .dm-stages { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.diagram-mobile .dm-stage { border-left-color: #ed747a; }
+.diagram-mobile .dm-stage small { color: #ed747a; }
+.diagram-mobile .dm-wide { grid-column: 1 / -1; }
+.diagram-mobile .dm-badge-line { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.diagram-mobile .dm-badge-line span { display: inline-block; padding: 5px 8px; border: 1px solid #657285; border-radius: 2px; color: #f0f3f7; font-size: .72rem; }
+
+/* Mobile/tablet users should not have to zoom a 1600px SVG down to 390px. */
+@media screen and (max-width: 1100px) {
+  .diagram-frame { display: block; min-height: 0; padding: clamp(16px, 3vw, 30px); overflow: visible; }
+  .diagram-frame > img { display: none; }
+  .diagram-mobile { display: block; width: 100%; }
+  .diagram-mobile .dm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .diagram-mobile .dm-stages { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media screen and (max-width: 900px) {
+  .diagram-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: visible; scroll-snap-type: none; }
+  .diagram-tabs button { min-width: 0; min-height: 58px; padding: 12px 10px; scroll-snap-align: none; overflow-wrap: anywhere; }
+}
+@media screen and (max-width: 760px) {
+  .diagram-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diagram-tabs button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 52px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-dark);
+    line-height: 1.32;
+    font-size: .82rem;
+  }
+  .diagram-tabs button span { display: inline; flex: none; margin: 0; font-size: .7rem; }
+  .diagram-tabs button:nth-child(2n) { border-right: 0; }
+  .diagram-tabs button:last-child { grid-column: 1 / -1; border-bottom: 0; }
+  .diagram-frame { padding: 18px 14px; }
+  .diagram-mobile .dm-grid, .diagram-mobile .dm-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diagram-mobile .dm-card { padding: 13px 12px; }
+  .diagram-mobile .dm-card strong { font-size: .94rem; }
+  .diagram-mobile .dm-card p { font-size: .8rem; }
+  .diagram-mobile .dm-heading h4 { font-size: 1.62rem; }
+}
+@media screen and (max-width: 430px) {
+  .diagram-mobile .dm-grid { grid-template-columns: 1fr; }
+  .diagram-mobile .dm-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diagram-mobile .dm-stages .dm-card { padding: 12px 10px; }
+  .diagram-mobile .dm-stages .dm-card p { font-size: .77rem; }
+  .diagram-frame { padding: 18px 12px; }
+}
+/* Print all five source SVGs, not the alternate narrow-screen HTML views. */
+@media print {
+  .diagram-mobile { display: none !important; }
+  .diagram-frame { min-height: 0 !important; }
+  .diagram-frame > img { display: block !important; height: auto !important; max-height: 100% !important; }
 }
