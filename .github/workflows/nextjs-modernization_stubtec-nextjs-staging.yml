@@ -9,6 +9,12 @@ on:
       - 'nextjs-modernization'
   workflow_dispatch:
 
+# Serialize whole runs: Azure OneDeploy returns HTTP 409 for concurrent deployments.
+# Never cancel an active OneDeploy operation; cancellation can leave a stale Azure lock.
+concurrency:
+  group: stubtec-nextjs-staging
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,6 +47,9 @@ jobs:
         with:
           name: node-app
           path: deploy/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 3
 
   deploy:
     runs-on: ubuntu-latest
@@ -70,3 +79,19 @@ jobs:
           slot-name: 'Production'
           package: .
           
+          startup-command: 'node server.js'
+
+      - name: Verify staging serves the Next.js homepage
+        shell: bash
+        run: |
+          URL="https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/"
+          for attempt in $(seq 1 24); do
+            if curl --fail --location --silent --show-error --connect-timeout 10 --max-time 20 "$URL" -o /tmp/stubtec-response.html && grep -q 'Connect engineering' /tmp/stubtec-response.html; then
+              echo "Staging website responds with the expected StubTec homepage."
+              exit 0
+            fi
+            echo "Waiting for Next.js to start (attempt $attempt/24)..."
+            sleep 10
+          done
+          echo "::error::Azure deployment finished but the expected homepage did not become available."
+          exit 1
