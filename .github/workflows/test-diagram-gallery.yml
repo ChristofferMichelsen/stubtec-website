@@ -1,0 +1,165 @@
+name: Validate responsive diagram gallery
+on:
+  push:
+    branches: [fix-mobile-diagram-gallery-20261017]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gallery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Assemble production-equivalent HTML with inline CSS and JS
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('public/index.html')
+          h=p.read_text()
+          css=Path('public/styles.css').read_text()+'\n'+Path('public/marketing.css').read_text()
+          js=Path('public/site.js').read_text()
+          assert h.count('class="diagram-panel"')==5
+          assert h.count('data-diagram-dot=')==5
+          assert 'diagram-mobile-toolbar' in h
+          assert 'diagram-scroll' not in h
+          h=h.replace('<link rel="stylesheet" href="/static-resource?name=styles.css" />','<style data-stubtec-inline-css>\n'+css+'\n</style>')
+          h=h.replace('<script src="/static-resource?name=site.js" defer></script>','')
+          h=h.replace('</body>','<script data-stubtec-inline-js>\n'+js+'\n</script>\n</body>')
+          assert len(h)>80000
+          p.write_text(h)
+          print('GALLERY_BUILD_SOURCE bytes',len(h))
+          PY
+      - name: Install and build Next.js
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Start Azure-equivalent standalone server
+        shell: bash
+        run: |
+          mkdir -p preview/.next
+          cp -a .next/standalone/. preview/
+          cp -a .next/static preview/.next/static
+          cp -a public preview/public
+          (cd preview && PORT=3179 HOSTNAME=127.0.0.1 node server.js > /tmp/stubtec-preview-server.log 2>&1 &)
+          for i in $(seq 1 15); do
+            if curl -fsS http://127.0.0.1:3179/ -o /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3179/ | grep -q 'diagram-mobile-toolbar'
+      - name: Test responsive, swipe, pagination, desktop tabs, and accessibility
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock puppeteer-core @axe-core/puppeteer --no-audit --no-fund
+          mkdir -p gallery-screenshots
+          node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const { AxePuppeteer }=require('@axe-core/puppeteer');
+          const assert=require('node:assert/strict');
+          const wait=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{
+            const browser=await puppeteer.launch({headless:true,executablePath:'/usr/bin/google-chrome-stable',args:['--no-sandbox','--disable-dev-shm-usage']});
+            try{
+              for(const width of [360,393,430,768,1440]){
+                const page=await browser.newPage();
+                await page.setViewport({width,height:900,deviceScaleFactor:1,isMobile:width<=430,hasTouch:width<=430});
+                const errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                const response=await page.goto('http://127.0.0.1:3179/',{waitUntil:'networkidle2',timeout:35000});
+                assert.equal(response.status(),200);
+                const state=await page.evaluate(()=>{
+                  let stage=document.querySelector('.diagram-stage');
+                  let panels=[...stage.querySelectorAll('.diagram-panel')];
+                  let frame=panels[0].querySelector('.diagram-frame');
+                  let box=frame.getBoundingClientRect();
+                  let stageBox=stage.getBoundingClientRect();
+                  return {
+                    width:innerWidth,
+                    pageWidth:document.documentElement.scrollWidth,
+                    mobileToolbar:getComputedStyle(document.querySelector('.diagram-mobile-toolbar')).display,
+                    desktopTabs:getComputedStyle(document.querySelector('.diagram-tabs')).display,
+                    stageDisplay:getComputedStyle(stage).display,
+                    panelTotal:panels.length,
+                    visiblePanels:panels.filter(p=>!p.hidden).length,
+                    dots:document.querySelectorAll('[data-diagram-dot]').length,
+                    frameW:Math.round(box.width),
+                    frameH:Math.round(box.height),
+                    frameRatio:+(box.width/box.height).toFixed(3),
+                    stageW:Math.round(stageBox.width),
+                    stageH:Math.round(stageBox.height),
+                    current:document.querySelector('[data-diagram-current]').textContent,
+                    firstPanel:panels[0].id,
+                    imageErrors:[...document.querySelectorAll('.diagram-panel img')].filter(i=>i.complete&&i.naturalWidth===0).map(i=>i.currentSrc),
+                    fullSize:panels.every(p=>{const a=p.querySelector('.diagram-caption a');return a&&a.href.includes('assets/diagrams/')&&a.target==='_blank'}),
+                  };
+                });
+                console.log('RESPONSIVE_GALLERY',JSON.stringify(state));
+                assert.equal(state.pageWidth,width,'No horizontal document overflow');
+                assert.equal(state.panelTotal,5);
+                assert.equal(state.dots,5);
+                assert.equal(state.imageErrors.length,0);
+                assert(state.fullSize,'All diagrams must have full-size link');
+                if(width<=430){
+                  assert.equal(state.mobileToolbar,'flex');
+                  assert.equal(state.desktopTabs,'none');
+                  assert.equal(state.stageDisplay,'flex');
+                  assert.equal(state.visiblePanels,5);
+                  assert(Math.abs(state.frameRatio-16/9)<0.035,'Preview should be 16:9');
+                  assert(state.frameH<260,'Preview should be compact');
+                  assert(state.stageH<580,'No oversized empty diagram frame');
+                  assert.equal(state.current,'01');
+                  assert(await page.$eval('[data-diagram-prev]',b=>b.disabled),'Prev disabled at start');
+                  if(width===393){
+                    await page.screenshot({path:'gallery-screenshots/mobile-first.png'});
+                    await page.click('[data-diagram-next]');
+                    await page.waitForFunction(()=>document.querySelector('[data-diagram-current]').textContent==='02',{timeout:4000});
+                    await wait(650);
+                    let afterNext=await page.evaluate(()=>({index:document.querySelector('[data-diagram-current]').textContent, scroll:document.querySelector('.diagram-stage').scrollLeft,dot:document.querySelectorAll('[data-diagram-dot][aria-pressed="true"]').length}));
+                    console.log('GALLERY_NEXT',JSON.stringify(afterNext));
+                    assert(afterNext.scroll>state.stageW*.5,'Next should scroll gallery');
+                    assert.equal(afterNext.dot,1);
+                    await page.screenshot({path:'gallery-screenshots/mobile-second.png'});
+                    await page.click('[data-diagram-dot="diagram-framework"]');
+                    await page.waitForFunction(()=>document.querySelector('[data-diagram-current]').textContent==='05',{timeout:4000});
+                    await wait(900);
+                    assert(await page.$eval('[data-diagram-next]',b=>b.disabled),'Next disabled on last');
+                    await page.click('[data-diagram-prev]');
+                    await page.waitForFunction(()=>document.querySelector('[data-diagram-current]').textContent==='04',{timeout:4000});
+                    await wait(600);
+                    // Native scroll simulates a completed touch-swipe; verify observers synchronize the counter.
+                    await page.$eval('.diagram-stage',s=>s.scrollTo({left:0,behavior:'instant'}));
+                    await page.waitForFunction(()=>document.querySelector('[data-diagram-current]').textContent==='01',{timeout:4000});
+                    console.log('GALLERY_SWIPE_SYNC',await page.$eval('[data-diagram-current]',x=>x.textContent));
+                    const result=await new AxePuppeteer(page).analyze();
+                    console.log('AXE_MOBILE',JSON.stringify(result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}))));
+                    assert(!result.violations.some(v=>v.impact==='serious'||v.impact==='critical'),'No serious accessibility violations');
+                  }
+                }else if(width===1440){
+                  assert.equal(state.mobileToolbar,'none');
+                  assert.equal(state.visiblePanels,1);
+                  assert.equal(state.desktopTabs,'grid');
+                  await page.click('#diagram-tab-lifecycle');
+                  assert(await page.$eval('#diagram-lifecycle',p=>!p.hidden),'Desktop second tab switches panel');
+                  assert(await page.$eval('#diagram-tab-lifecycle',t=>t.getAttribute('aria-selected')==='true'));
+                  await page.screenshot({path:'gallery-screenshots/desktop-second.png'});
+                  const result=await new AxePuppeteer(page).analyze();
+                  console.log('AXE_DESKTOP',JSON.stringify(result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}))));
+                  assert(!result.violations.some(v=>v.impact==='serious'||v.impact==='critical'),'No serious desktop accessibility violations');
+                }
+                assert.deepEqual(errors,[],'No JavaScript runtime errors');
+                await page.close();
+              }
+              console.log('PASS: diagram gallery mobile and desktop');
+            }finally{await browser.close()}
+          })().catch(e=>{console.error('GALLERY_TEST_FAILED',e.stack||e);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stubtec-diagram-gallery-review
+          path: gallery-screenshots/
+          if-no-files-found: ignore
+          retention-days: 3
