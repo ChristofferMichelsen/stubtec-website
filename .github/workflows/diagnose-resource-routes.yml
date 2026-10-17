@@ -1,0 +1,30 @@
+name: Diagnose static resource route
+
+on:
+  push:
+    branches: [diagnose-missing-styles-20261017]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check route response and any missing runtime assets
+        shell: bash
+        run: |
+          set -uo pipefail
+          for HOST in "https://www.stubtec.dk" "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net"; do
+            for PATHNAME in "/static-resource?name=styles.css" "/static-resource?name=site.js" "/static-resource?name=assets/diagrams/digital-thread.svg" "/static-resource?name=assets/christoffer-architecture-review.jpg"; do
+              echo "URL=$HOST$PATHNAME"
+              CODE=$(curl --silent --show-error -L --connect-timeout 10 --max-time 20 -o /tmp/stubtec-diagnostic-body -D /tmp/stubtec-diagnostic-header -w '%{http_code}' "$HOST$PATHNAME" || true)
+              echo "HTTP=$CODE"
+              grep -iE '^(content-type|cache-control|content-length):' /tmp/stubtec-diagnostic-header || true
+              echo "SIZE=$(wc -c < /tmp/stubtec-diagnostic-body)"
+              head -c 250 /tmp/stubtec-diagnostic-body || true
+              printf '\n\n'
+            done
+          done
