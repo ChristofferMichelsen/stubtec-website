@@ -25,7 +25,7 @@ jobs:
           echo "APEX_TLS"
           echo | openssl s_client -servername stubtec.dk -connect stubtec.dk:443 2>/dev/null | openssl x509 -noout -subject -dates
           echo "APEX_REQUEST"
-          curl -sS -I -L --max-time 12 https://stubtec.dk/ 2>&1 | head -14
+          curl -sS -I -L --max-time 12 https://stubtec.dk/ 2>&1 | head -14 || true
       - name: Mobile/browser test and broken image check
         shell: bash
         run: |
