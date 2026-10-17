@@ -37,13 +37,13 @@ jobs:
           from pathlib import Path
           page = Path('public/index.html')
           html = page.read_text(encoding='utf-8')
-          css = Path('public/styles.css').read_text(encoding='utf-8')
+          css = Path('public/styles.css').read_text(encoding='utf-8') + '\n' + Path('public/marketing.css').read_text(encoding='utf-8')
           js = Path('public/site.js').read_text(encoding='utf-8')
           css_ref = '<link rel="stylesheet" href="/static-resource?name=styles.css" />'
           js_ref = '<script src="/static-resource?name=site.js" defer></script>'
           assert html.count(css_ref) == 1, 'Expected one CSS reference'
           assert html.count(js_ref) == 1, 'Expected one JS reference'
-          assert len(css) > 25000 and len(js) > 6000, 'Unexpected empty site assets'
+          assert len(css) > 35000 and len(js) > 6000, 'Unexpected empty site assets'
           assert '</style' not in css.lower() and '</script' not in js.lower()
           html = html.replace(css_ref, '<style data-stubtec-inline-css>\n' + css + '\n</style>')
           html = html.replace(js_ref, '')
@@ -111,6 +111,16 @@ jobs:
         run: |
           az webapp restart --name stubtec-nextjs-staging --resource-group stubtec-nextjs-staging_group
 
+
+      - name: Inspect apex SSL configuration without modifying Azure
+        shell: bash
+        run: |
+          set +e
+          echo "AZURE_HOSTNAMES"
+          az webapp config hostname list -g stubtec-nextjs-staging_group --webapp-name stubtec-nextjs-staging --query "[].{host:name,sslState:sslState,thumbprint:thumbprint}" -o json || true
+          echo "APEX_SSL_EXPIRATION"
+          echo | openssl s_client -servername stubtec.dk -connect stubtec.dk:443 2>/dev/null | openssl x509 -noout -subject -enddate || true
+
       - name: Verify current release on staging and public domain
         shell: bash
         run: |
@@ -120,7 +130,7 @@ jobs:
             OK=0
             for attempt in $(seq 1 16); do
               STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
-              if [ "$STATUS" = "200" ] && grep -q 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-css' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-js' /tmp/stubtec-check.html && [ "$(wc -c < /tmp/stubtec-check.html)" -gt 60000 ]; then
+              if [ "$STATUS" = "200" ] && grep -q 'PLM-konsulent &amp; Aras Innovator | CAD/PDM–ERP | StubTEC' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-css' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-js' /tmp/stubtec-check.html && [ "$(wc -c < /tmp/stubtec-check.html)" -gt 60000 ]; then
                 echo "PASS: $HOST serves the new StubTEC PLM homepage."
                 OK=1
                 break
@@ -166,3 +176,27 @@ jobs:
               echo "PASS: ${HOST}${NAME} ($SIZE bytes, $EXPECTED)"
             done
           done
+
+          echo "Verify published SEO pages and legacy redirects"
+          for PAGE in aras-innovator plm-arkitektur solidworks-pdm-aras-integration plm-study-week aras-quickstart integration-pilot cases ressourcer om kontakt privatliv; do
+            STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-page.html -w '%{http_code}' "https://www.stubtec.dk/$PAGE?verify-release=$GITHUB_SHA" || true)
+            if [ "$STATUS" != 200 ] || ! grep -q '<link rel="canonical"' /tmp/stubtec-page.html; then
+              echo "::error::SEO page $PAGE failed (HTTP $STATUS)"
+              exit 1
+            fi
+          done
+          for LEGACY in aras.html services.html about.html study-week.html resources.html privacy.html AboutUs.html ContactUs.html; do
+            STATUS=$(curl --silent --show-error --connect-timeout 10 --max-time 25 -o /dev/null -w '%{http_code}' "https://www.stubtec.dk/$LEGACY" || true)
+            if [ "$STATUS" != 301 ]; then
+              echo "::error::Expected 301 from $LEGACY; got HTTP $STATUS"
+              exit 1
+            fi
+          done
+          for META in robots.txt sitemap.xml; do
+            STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -o /tmp/meta-body -w '%{http_code}' "https://www.stubtec.dk/$META" || true)
+            if [ "$STATUS" != 200 ]; then
+              echo "::error::SEO metadata $META failed (HTTP $STATUS)"
+              exit 1
+            fi
+          done
+          echo "PASS: all SEO landing pages, redirects and crawl metadata"
