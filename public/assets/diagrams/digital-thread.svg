@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Digital thread and digital twin reference architecture</title>
+  <desc id="desc">CAD and ECAD sources feed a governed Aras PLM control plane. Approved product data moves to ERP, MES and service. Field feedback closes the engineering loop and provides digital twin context.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.025"/></pattern>
+    <marker id="arrow-red" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#e0555c"/></marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#5f9dea"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.28"/></filter>
+    <style>.sans{font-family:Inter,Segoe UI,Arial,sans-serif}.mono{font-family:SFMono-Regular,Consolas,monospace}.label{font-size:16px;letter-spacing:2.6px;font-weight:700}.title{font-size:52px;font-weight:780;letter-spacing:-2px}.sub{font-size:21px;fill:#aab3bf}.section{font-size:15px;letter-spacing:2px;font-weight:700;fill:#858f9e}.node-title{font-size:27px;font-weight:760;fill:#f3f5f7}.node-copy{font-size:17px;fill:#9ea8b5}.micro{font-size:14px;fill:#7f8996}.core-title{font-size:42px;font-weight:800;letter-spacing:-1px}.core-row{font-size:18px;fill:#d8dde4}.footer{font-size:14px;letter-spacing:1.7px;fill:#76808e}</style>
+  </defs>
+  <rect width="1600" height="900" fill="#0b0f14"/><rect width="1600" height="900" fill="url(#grid)"/><rect width="14" height="900" fill="#c3262e"/>
+  <g class="sans">
+    <text x="70" y="55" class="label" fill="#e0555c">STUBTEC / REFERENCE ARCHITECTURE / 01</text>
+    <text x="70" y="122" class="title" fill="#f3f5f7">Digital thread &amp; digital twin</text>
+    <text x="70" y="160" class="sub">PLM maintains product identity, configuration and decision history across system boundaries.</text>
+    <line x1="70" y1="194" x2="1530" y2="194" stroke="#2b3343"/>
+    <text x="80" y="236" class="section">ENGINEERING SOURCES</text><text x="570" y="236" class="section">PLM CONTROL PLANE</text><text x="1160" y="236" class="section">ENTERPRISE CONSUMERS</text>
+    <g filter="url(#shadow)">
+      <rect x="80" y="276" width="360" height="126" rx="12" fill="#111821" stroke="#2b3343"/><rect x="80" y="276" width="7" height="126" rx="3" fill="#5f9dea"/>
+      <text x="111" y="316" class="mono micro">SOURCE / 01</text><text x="111" y="352" class="node-title">CAD / PDM</text><text x="111" y="381" class="node-copy">Geometry · drawings · CAD revisions</text>
+      <rect x="80" y="438" width="360" height="126" rx="12" fill="#111821" stroke="#2b3343"/><rect x="80" y="438" width="7" height="126" rx="3" fill="#5f9dea"/>
+      <text x="111" y="478" class="mono micro">SOURCE / 02</text><text x="111" y="514" class="node-title">ECAD / BUILD</text><text x="111" y="543" class="node-copy">Schematics · PCBAs · build packages</text>
+      <rect x="80" y="600" width="360" height="126" rx="12" fill="#111821" stroke="#2b3343"/><rect x="80" y="600" width="7" height="126" rx="3" fill="#6c7480"/>
+      <text x="111" y="640" class="mono micro">SOURCE / 03</text><text x="111" y="676" class="node-title">TEST / QUALITY</text><text x="111" y="705" class="node-copy">Evidence · deviations · certificates</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="570" y="276" width="460" height="450" rx="18" fill="#111821" stroke="#c3262e" stroke-width="2"/><rect x="570" y="276" width="460" height="82" rx="18" fill="#c3262e"/><rect x="570" y="340" width="460" height="18" fill="#c3262e"/>
+      <text x="604" y="313" class="mono micro" fill="#ffffff">SYSTEM OF RECORD</text><text x="604" y="343" class="core-title" fill="#ffffff">ARAS PLM</text>
+      <rect x="604" y="390" width="392" height="54" rx="8" fill="#171f2a" stroke="#303948"/><text x="627" y="424" class="core-row">Product identity · classification · ownership</text>
+      <rect x="604" y="458" width="392" height="54" rx="8" fill="#171f2a" stroke="#303948"/><text x="627" y="492" class="core-row">EBOM · documents · certificates · variants</text>
+      <rect x="604" y="526" width="392" height="54" rx="8" fill="#171f2a" stroke="#303948"/><text x="627" y="560" class="core-row">Lifecycle · ECR / ECO · approval authority</text>
+      <rect x="604" y="594" width="392" height="54" rx="8" fill="#171f2a" stroke="#303948"/><text x="627" y="628" class="core-row">Released configuration · audit trail</text>
+      <line x1="604" y1="677" x2="996" y2="677" stroke="#303948"/><text x="604" y="704" class="mono micro" fill="#e0555c">ONE IDENTITY / ONE RELEASE AUTHORITY</text>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="1160" y="276" width="360" height="126" rx="12" fill="#111821" stroke="#2b3343"/><rect x="1513" y="276" width="7" height="126" rx="3" fill="#f4c400"/>
+      <text x="1191" y="316" class="mono micro">CONSUMER / 01</text><text x="1191" y="352" class="node-title">ERP</text><text x="1191" y="381" class="node-copy">Purchasing · cost · inventory</text>
+      <rect x="1160" y="438" width="360" height="126" rx="12" fill="#111821" stroke="#2b3343"/><rect x="1513" y="438" width="7" height="126" rx="3" fill="#f4c400"/>
+      <text x="1191" y="478" class="mono micro">CONSUMER / 02</text><text x="1191" y="514" class="node-title">MES / PRODUCTION</text><text x="1191" y="543" class="node-copy">Routings · work instructions · traceability</text>
+      <rect x="1160" y="600" width="360" height="126" rx="12" fill="#111821" stroke="#2b3343"/><rect x="1513" y="600" width="7" height="126" rx="3" fill="#f4c400"/>
+      <text x="1191" y="640" class="mono micro">CONSUMER / 03</text><text x="1191" y="676" class="node-title">SERVICE</text><text x="1191" y="705" class="node-copy">As-maintained state · field feedback</text>
+    </g>
+    <g fill="none" stroke-linecap="round">
+      <path d="M440 339H545" stroke="#5f9dea" stroke-width="3" marker-end="url(#arrow-blue)"/><path d="M440 501H545" stroke="#5f9dea" stroke-width="3" marker-end="url(#arrow-blue)"/><path d="M440 663H545" stroke="#5f9dea" stroke-width="3" marker-end="url(#arrow-blue)"/>
+      <path d="M1030 339H1135" stroke="#e0555c" stroke-width="3" marker-end="url(#arrow-red)"/><path d="M1030 501H1135" stroke="#e0555c" stroke-width="3" marker-end="url(#arrow-red)"/><path d="M1030 663H1135" stroke="#e0555c" stroke-width="3" marker-end="url(#arrow-red)"/>
+    </g>
+    <path d="M1340 744V782H260V744" fill="none" stroke="#5f9dea" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow-blue)"/>
+    <rect x="568" y="758" width="466" height="52" rx="26" fill="#0f151e" stroke="#2b3343"/>
+    <text x="801" y="780" text-anchor="middle" class="mono micro" fill="#8ebcf1">CLOSED-LOOP ENGINEERING</text><text x="801" y="800" text-anchor="middle" class="mono micro">Serial context · actual state · field evidence</text>
+    <line x1="70" y1="842" x2="1530" y2="842" stroke="#2b3343"/><text x="70" y="872" class="mono footer">STUBTEC / DIGITAL THREAD / SYSTEM OWNERSHIP BEFORE INTERFACE DESIGN</text><text x="1530" y="872" text-anchor="end" class="mono footer">PLM-REF-01</text>
+  </g>
+</svg>
