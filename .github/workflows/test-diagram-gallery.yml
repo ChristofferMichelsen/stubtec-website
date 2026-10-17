@@ -2,6 +2,8 @@ name: Validate responsive diagram gallery
 on:
   push:
     branches: [fix-mobile-diagram-gallery-20261017]
+  pull_request:
+    branches: [nextjs-modernization]
   workflow_dispatch:
 permissions:
   contents: read
