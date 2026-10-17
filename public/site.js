@@ -153,7 +153,20 @@ diagramTabs.forEach(function (tab, index) {
     selectDiagram(diagramTabs[nextIndex].dataset.diagramTarget, true);
   });
 });
-if (diagramTabs.length) selectDiagram(diagramTabs[0].dataset.diagramTarget, false);
+// Deep links from the resource gallery select the corresponding tab.
+const linkedDiagramTab = diagramTabs.find(function (tab) {
+  return window.location.hash === '#' + tab.id;
+});
+if (diagramTabs.length) {
+  const initialDiagramTab = linkedDiagramTab || diagramTabs[0];
+  selectDiagram(initialDiagramTab.dataset.diagramTarget, false);
+}
+window.addEventListener('hashchange', function () {
+  const targetTab = diagramTabs.find(function (tab) {
+    return window.location.hash === '#' + tab.id;
+  });
+  if (targetTab) selectDiagram(targetTab.dataset.diagramTarget, false);
+});
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealElements = Array.from(document.querySelectorAll('.reveal'));
