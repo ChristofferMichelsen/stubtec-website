@@ -128,7 +128,7 @@ jobs:
                 if(errors.length)throw Error('JS errors '+errors.join(' | '));
                 if(width===393){
                   const axe=await new AxePuppeteer(page).analyze();
-                  console.log('ACCESSIBILITY',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}))));
+                  console.log('ACCESSIBILITY',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,8).map(n=>({target:n.target,summary:n.failureSummary,html:n.html}))}))));
                   if(axe.violations.some(v=>v.impact==='serious'||v.impact==='critical'))throw Error('Critical accessibility violation');
                   const contact=await page.goto('http://127.0.0.1:3177/kontakt',{waitUntil:'load'});
                   if(contact.status()!==200)throw Error('Contact inaccessible');
