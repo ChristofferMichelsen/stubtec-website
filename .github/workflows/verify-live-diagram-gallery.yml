@@ -32,6 +32,13 @@ jobs:
                 page.on('pageerror',e=>errors.push(e.message));
                 const res=await page.goto('https://www.stubtec.dk/?diagram-live-check=20261017',{waitUntil:'networkidle2',timeout:45000});
                 assert.equal(res.status(),200);
+                await page.evaluate(()=>{
+                  const stage=document.querySelector('.diagram-stage');
+                  if(stage) stage.scrollIntoView({block:'center',behavior:'instant'});
+                  document.querySelectorAll('.diagram-panel img').forEach(img=>{ img.loading='eager'; });
+                });
+                await page.waitForFunction(()=>[...document.querySelectorAll('.diagram-panel img')].every(img=>img.complete&&img.naturalWidth>0),{timeout:25000});
+                await wait(450);
                 const d=await page.evaluate(()=>{
                   const stage=document.querySelector('.diagram-stage'),panels=[...document.querySelectorAll('.diagram-panel')],rect=panels[0].querySelector('.diagram-frame').getBoundingClientRect();
                   return {width:innerWidth,pageWidth:document.documentElement.scrollWidth,dots:document.querySelectorAll('[data-diagram-dot]').length,toolbar:getComputedStyle(document.querySelector('.diagram-mobile-toolbar')).display,frameW:Math.round(rect.width),frameH:Math.round(rect.height),stageHeight:Math.round(stage.getBoundingClientRect().height),visiblePanels:panels.filter(x=>!x.hidden).length,images:[...document.querySelectorAll('.diagram-panel img')].map(i=>({loaded:i.complete&&i.naturalWidth>0,url:i.currentSrc})),current:document.querySelector('[data-diagram-current]').textContent};
