@@ -95,7 +95,7 @@ jobs:
             OK=0
             for attempt in $(seq 1 16); do
               STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
-              if [ "$STATUS" = "200" ] && grep -q 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow' /tmp/stubtec-check.html; then
+              if [ "$STATUS" = "200" ] && grep -q 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow' /tmp/stubtec-check.html && grep -q '/static-resource?name=styles.css' /tmp/stubtec-check.html; then
                 echo "PASS: $HOST serves the new StubTEC PLM homepage."
                 OK=1
                 break
@@ -108,4 +108,32 @@ jobs:
               echo "::error::$HOST still does not serve the new StubTEC PLM homepage after deployment and restart."
               exit 1
             fi
+          done
+
+          echo "Verifying production CSS, JavaScript, SVG and photo assets."
+          for HOST in "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/" "https://www.stubtec.dk/"; do
+            for NAME in styles.css site.js assets/diagrams/digital-thread.svg assets/christoffer-architecture-review.jpg; do
+              CODE=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -D /tmp/asset-headers.txt -o /tmp/stubtec-asset -w '%{http_code}' "${HOST}static-resource?name=${NAME}&verify-release=${GITHUB_SHA}" || true)
+              if [ "$CODE" != "200" ]; then
+                echo "::error::Missing asset ${HOST}${NAME}: HTTP $CODE"
+                exit 1
+              fi
+              case "$NAME" in
+                *.css) EXPECTED="text/css" ;;
+                *.js) EXPECTED="text/javascript" ;;
+                *.svg) EXPECTED="image/svg+xml" ;;
+                *.jpg) EXPECTED="image/jpeg" ;;
+              esac
+              if ! grep -qi "content-type: $EXPECTED" /tmp/asset-headers.txt; then
+                echo "::error::Unexpected content type for ${HOST}${NAME}"
+                cat /tmp/asset-headers.txt
+                exit 1
+              fi
+              SIZE=$(wc -c < /tmp/stubtec-asset)
+              if [ "$SIZE" -lt 1000 ]; then
+                echo "::error::Asset ${HOST}${NAME} unexpectedly small: $SIZE bytes"
+                exit 1
+              fi
+              echo "PASS: ${HOST}${NAME} ($SIZE bytes, $EXPECTED)"
+            done
           done
