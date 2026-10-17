@@ -618,3 +618,19 @@ h3 { letter-spacing: -0.025em; }
   .diagram-frame { min-height: 0 !important; }
   .diagram-frame > img { display: block !important; height: auto !important; max-height: 100% !important; }
 }
+
+
+/* The five-diagram heading must not collapse into a narrow 5-line stack
+   on 1200–1600px desktop viewports. Keep the editorial two-column layout. */
+@media screen and (min-width: 1101px) {
+  .diagram-library .section-intro.wide {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    column-gap: clamp(46px, 6vw, 95px);
+  }
+  .diagram-library .section-intro h2 {
+    max-width: none;
+    font-size: clamp(2.8rem, 4.1vw, 4.35rem);
+    line-height: 1.04;
+    letter-spacing: -.048em;
+  }
+}
