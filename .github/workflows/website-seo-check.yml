@@ -1,0 +1,143 @@
+name: Validate StubTEC website SEO and UX before production
+on:
+  push:
+    branches: [website-seo-ux-20261017]
+  pull_request:
+    branches: [nextjs-modernization]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Prepare exactly the HTML shipped to Azure
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          page=Path('public/index.html')
+          html=page.read_text()
+          css=Path('public/styles.css').read_text()+'\n'+Path('public/marketing.css').read_text()
+          script=Path('public/site.js').read_text()
+          assert html.count('<link rel="stylesheet" href="/static-resource?name=styles.css" />')==1
+          assert html.count('<script src="/static-resource?name=site.js" defer></script>')==1
+          html=html.replace('<link rel="stylesheet" href="/static-resource?name=styles.css" />','<style data-stubtec-inline-css>\n'+css+'\n</style>')
+          html=html.replace('<script src="/static-resource?name=site.js" defer></script>','')
+          html=html.replace('</body>','<script data-stubtec-inline-js>\n'+script+'\n</script>\n</body>')
+          assert html.count('rel="canonical"')==1
+          assert 'christoffer-architecture-review.webp' not in html
+          assert len(html)>65000 and 'data-stubtec-inline-css' in html
+          page.write_text(html)
+          print('Prepared website with bytes:',len(html))
+          PY
+      - name: Install, typecheck and build Next.js
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Serve the standalone Azure artifact locally
+        shell: bash
+        run: |
+          mkdir -p preview/.next
+          cp -a .next/standalone/. preview/
+          cp -a .next/static preview/.next/static
+          cp -a public preview/public
+          (cd preview && PORT=3177 HOSTNAME=127.0.0.1 node server.js > /tmp/site-server.log 2>&1 &)
+          for I in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sSf http://127.0.0.1:3177/ -o /dev/null; then break; fi
+            sleep 2
+          done
+      - name: Verify homepage, all pages, metadata and redirects
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from urllib.request import build_opener, Request, HTTPRedirectHandler
+          from urllib.error import HTTPError
+          from html.parser import HTMLParser
+          import xml.etree.ElementTree as ET
+          ROOT='http://127.0.0.1:3177'
+          pages=['/','/aras-innovator','/plm-arkitektur','/solidworks-pdm-aras-integration',
+                 '/plm-study-week','/aras-quickstart','/integration-pilot','/cases',
+                 '/ressourcer','/om','/kontakt','/privatliv']
+          for route in pages:
+            from urllib.request import urlopen
+            r=urlopen(ROOT+route,timeout=10)
+            body=r.read().decode('utf-8')
+            assert r.status==200,(route,r.status)
+            assert body.count('<h1')==1,route
+            assert 'rel="canonical"' in body,route
+            assert 'og:title' in body,route
+            assert 'application/ld+json' in body,route
+            assert '<style' in body,route
+            if route=='/':
+              assert 'data-stubtec-inline-js' in body
+              assert 'christoffer-architecture-review.webp' not in body
+            print('PAGE_OK',route,len(body))
+          for route in ['/robots.txt','/sitemap.xml']:
+            data=urlopen(ROOT+route,timeout=10).read()
+            assert len(data)>45,(route,len(data))
+            print('META_OK',route,len(data))
+            if route=='/sitemap.xml':
+              root=ET.fromstring(data)
+              assert len(root.findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url'))==len(pages)
+          class NoRedirect(HTTPRedirectHandler):
+            def redirect_request(self,*args,**kwargs): return None
+          opener=build_opener(NoRedirect())
+          redir={'/aras.html':'/aras-innovator','/about.html':'/om','/services.html':'/plm-arkitektur',
+                 '/study-week.html':'/plm-study-week','/resources.html':'/ressourcer',
+                 '/privacy.html':'/privatliv','/ContactUs.html':'/kontakt','/index.html':'/'}
+          for old,dest in redir.items():
+            try: opener.open(Request(ROOT+old),timeout=10);raise AssertionError('Missing redirect '+old)
+            except HTTPError as e:
+              assert e.code==301,(old,e.code)
+              assert e.headers['Location'].endswith(dest),(old,e.headers['Location'])
+              print('REDIRECT_OK',old,dest)
+          for f in ['assets/diagrams/digital-thread.svg','assets/christoffer-architecture-review.jpg']:
+            u=ROOT+'/static-resource?name='+f
+            data=urlopen(u,timeout=10).read()
+            assert len(data)>1000,(f,len(data))
+            print('ASSET_OK',f,len(data))
+          PY
+      - name: Check 393px mobile layout and ARIA with Chrome
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock puppeteer-core @axe-core/puppeteer --no-audit --no-fund
+          node <<'JS'
+          const puppeteer=require('puppeteer-core');
+          const {AxePuppeteer}=require('@axe-core/puppeteer');
+          (async()=>{
+            const browser=await puppeteer.launch({headless:true,executablePath:'/usr/bin/google-chrome-stable',args:['--no-sandbox','--disable-dev-shm-usage']});
+            try {
+              for(const width of [360,393,768,1440]){
+                const page=await browser.newPage();
+                await page.setViewport({width,height:900});
+                const errors=[];page.on('pageerror',e=>errors.push(e.message));
+                const resp=await page.goto('http://127.0.0.1:3177/',{waitUntil:'load',timeout:30000});
+                const m=await page.evaluate(()=>{
+                  const d=document.documentElement, system=document.querySelector('.system-map'), nodes=[...document.querySelectorAll('.system-map .system-node,.system-map .system-core')];
+                  const outer=system.getBoundingClientRect();
+                  const within=nodes.every(n=>{const b=n.getBoundingClientRect();return b.left>=outer.left-2 && b.right<=outer.right+2});
+                  return {width:innerWidth,documentWidth:d.scrollWidth,css:!!document.querySelector('style[data-stubtec-inline-css]'),diagramNodes:nodes.length,diagramInsideFrame:within,brokenImages:[...document.images].filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc)};
+                });
+                console.log('RESPONSIVE',width,JSON.stringify(m));
+                if(resp.status()!==200||m.documentWidth>width+1||!m.css||m.brokenImages.length)throw Error('Mobile/desktop regression '+width);
+                if(width<=393&&(!m.diagramInsideFrame||m.diagramNodes!==6))throw Error('Thread flow clipped on '+width);
+                if(errors.length)throw Error('JS errors '+errors.join(' | '));
+                if(width===393){
+                  const axe=await new AxePuppeteer(page).analyze();
+                  console.log('ACCESSIBILITY',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,8).map(n=>({target:n.target,summary:n.failureSummary,html:n.html}))}))));
+                  if(axe.violations.some(v=>v.impact==='serious'||v.impact==='critical'))throw Error('Critical accessibility violation');
+                  const contact=await page.goto('http://127.0.0.1:3177/kontakt',{waitUntil:'load'});
+                  if(contact.status()!==200)throw Error('Contact inaccessible');
+                  const form=await page.$('#inquiry-form');if(!form)throw Error('Contact form missing');
+                }
+                await page.close();
+              }
+            }finally{await browser.close()}
+          })().catch(e=>{console.error(e);process.exit(1)})
+          JS
