@@ -1,0 +1,9 @@
+'use client';
+import { useState } from 'react';
+type Key='cad'|'plm'|'erp';
+const systems:Record<Key,{title:string;role:string;details:string;owns:string[]}> = {
+cad:{title:'CAD / PDM',role:'ENGINEERING AUTHORING',details:'Engineering teams manage CAD models, drawings, file references and CAD revisions.',owns:['CAD files','Engineering revisions','Design file lifecycle']},
+plm:{title:'Aras PLM',role:'PRODUCT GOVERNANCE',details:'PLM governs parts, BOMs, non-CAD revisions, approvals and release decisions.',owns:['Part master and BOM','Release and change governance','Cross-domain traceability']},
+erp:{title:'ERP',role:'ENTERPRISE EXECUTION',details:'ERP consumes approved product information for purchasing, planning and manufacturing.',owns:['Purchasing and inventory','Production planning','Enterprise transactions']}
+};
+export default function DigitalThread(){const [selected,setSelected]=useState<Key>('plm');const s=systems[selected];return <div className="diagram"><div className="diagram-top"><span>INTERACTIVE SYSTEM LANDSCAPE</span><span>SELECT A SYSTEM</span></div><div className="nodes">{(Object.keys(systems) as Key[]).map((k,i)=><div className="node-group" key={k}>{i>0&&<div className="arrow" aria-hidden="true">→<small>{i===1?'SYNC':'RELEASE'}</small></div>}<button className={'node '+(selected===k?'selected':'')} onClick={()=>setSelected(k)} aria-pressed={selected===k}><small>0{i+1} / {systems[k].role}</small><strong>{systems[k].title}</strong><span>{i===0?'Engineering data':i===1?'Product definition':'Enterprise operations'}</span></button></div>)}</div><div className="node-detail" aria-live="polite"><div><span className="kicker">{s.role}</span><h3>{s.title}</h3><p>{s.details}</p></div><div className="owns"><b>INFORMATION RESPONSIBILITY</b>{s.owns.map(x=><span key={x}>✓ {x}</span>)}</div></div><p className="diagram-note">Conceptual reference architecture. Actual ownership and interfaces are defined per customer.</p></div>}
