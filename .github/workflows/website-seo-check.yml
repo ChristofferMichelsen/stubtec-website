@@ -156,7 +156,8 @@ jobs:
                   console.log('ACCESSIBILITY',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,8).map(n=>({target:n.target,summary:n.failureSummary,html:n.html}))}))));
                   if(axe.violations.some(v=>v.impact==='serious'||v.impact==='critical'))throw Error('Critical accessibility violation');
                   const gallery=await page.goto('http://127.0.0.1:3177/ressourcer',{waitUntil:'load'});
-                  if(gallery.status()!==200||(await page.$('.resource-grid a[href^="/#diagram-tab-"]')).length!==5)throw Error('Missing readable resource links');
+                  const galleryCount=await page.$$eval('.resource-grid a', links=>links.filter(link=>link.getAttribute('href')?.startsWith('/#diagram-tab-')).length);
+                  if(gallery.status()!==200||galleryCount!==5)throw Error('Missing readable resource links, found '+galleryCount);
                   await page.goto('http://127.0.0.1:3177/#diagram-tab-framework',{waitUntil:'load'});
                   if(await page.$eval('#diagram-tab-framework',el=>el.getAttribute('aria-selected'))!=='true')throw Error('Deep-linked diagram not selected');
                   const contact=await page.goto('http://127.0.0.1:3177/kontakt',{waitUntil:'load'});
