@@ -1,0 +1,41 @@
+name: Public website end-to-end smoke test
+on:
+  push:
+    branches: [live-test-20261017]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check WWW, apex SSL, SEO and booking
+        shell: bash
+        run: |
+          set +e
+          URLS="https://www.stubtec.dk/ https://www.stubtec.dk/aras-innovator https://www.stubtec.dk/plm-arkitektur https://www.stubtec.dk/solidworks-pdm-aras-integration https://www.stubtec.dk/plm-study-week https://www.stubtec.dk/cases https://www.stubtec.dk/kontakt https://www.stubtec.dk/robots.txt https://www.stubtec.dk/sitemap.xml https://www.stubtec.dk/aras.html https://calendly.com/stubmic/30min"
+          for URL in $URLS; do
+            RESULTS=$(curl -sS -L --max-time 14 --connect-timeout 7 --retry 1 -A 'Mozilla/5.0' -o /tmp/smoke-body -w '%{http_code} %{url_effective} %{size_download} %{content_type}' "$URL" 2>&1)
+            echo "SITE_TEST $URL -> $RESULTS"
+            if echo "$URL" | grep -q 'www.stubtec.dk/$'; then
+              grep -o -m1 'calendly.com/stubmic/30min' /tmp/smoke-body || true
+              grep -o -m1 'data-stubtec-inline-css' /tmp/smoke-body || true
+            fi
+          done
+          echo "APEX_TLS"
+          echo | openssl s_client -servername stubtec.dk -connect stubtec.dk:443 2>/dev/null | openssl x509 -noout -subject -dates
+          echo "APEX_REQUEST"
+          curl -sS -I -L --max-time 12 https://stubtec.dk/ 2>&1 | head -14
+      - name: Mobile/browser test and broken image check
+        shell: bash
+        run: |
+          node <<'JS'
+          const {execFileSync}=require('child_process');
+          // Chrome headless built into runner. Use DOM dumps for smoke test.
+          for (const width of [393,1440]) {
+            try {
+              const html=execFileSync('/usr/bin/google-chrome-stable',['--headless','--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--window-size='+width+',900','--dump-dom','https://www.stubtec.dk/'],{timeout:40000,encoding:'utf8'});
+              console.log('BROWSER_TEST',width,'htmlBytes='+html.length,'hasCalendly='+html.includes('calendly.com/stubmic/30min'),'hasInlineCss='+html.includes('data-stubtec-inline-css'),'hasMain='+html.includes('id="main"'));
+            } catch(e){console.log('BROWSER_TEST_ERROR',width,String(e.message).slice(0,150))}
+          }
+          JS
