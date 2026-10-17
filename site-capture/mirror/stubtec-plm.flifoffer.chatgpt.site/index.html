@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0f14" />
+    <meta
+      name="description"
+      content="StubTEC designer og leverer PLM-arkitektur, Aras Innovator og integrationer mellem CAD/PDM, produktdata og ERP."
+    />
+    <meta name="robots" content="index,follow" />
+    <title>StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0f14'/%3E%3Cpath d='M15 19h34M15 32h25M15 45h34' fill='none' stroke='%23e23b43' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='47' cy='32' r='6' fill='%23f3f5f7'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="site.js" defer></script>
+    <noscript>
+      <style>
+        .reveal{opacity:1!important;transform:none!important}
+        @media (max-width:900px){.site-header{position:static;height:auto!important}.header-inner{display:block;padding-block:14px}.site-nav{display:flex!important;position:static!important;max-height:none!important}.menu-button{display:none!important}.hero{padding-top:48px!important}}
+      </style>
+    </noscript>
+  </head>
+  <body>
+    <a class="skip-link" href="index.html#main">Spring til indhold</a>
+
+    <header class="site-header" data-header>
+      <div class="header-inner shell">
+        <a class="brand" href="index.html#top" aria-label="StubTEC PLM, forside">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Stub<span>TEC</span></span>
+        </a>
+
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav">
+          <span class="sr-only" data-menu-label>Åbn menu</span>
+          <span></span><span></span>
+        </button>
+
+        <nav class="site-nav" id="site-nav" aria-label="Primær navigation">
+          <a href="index.html#architecture">Arkitektur</a>
+          <a href="index.html#diagrams">Diagrammer</a>
+          <a href="index.html#delivery">Leverancer</a>
+          <a href="index.html#study-week">Study Week</a>
+          <a href="index.html#about">Om</a>
+          <a class="nav-cta" href="mailto:csm@stubtec.dk?subject=Intro%20til%20PLM">Book 30 min.</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-grid shell">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">PLM-arkitektur · Aras Innovator · Digital thread</p>
+            <h1>Et kontrolleret produktflow.<br /><span>Fra CAD/PDM til ERP.</span></h1>
+            <p class="hero-lead">
+              CAD/PDM ejer konstruktion og CAD-revisioner. Aras ejer part, BOM, dokumentation,
+              change og release. ERP modtager godkendte produktdata. StubTEC definerer grænserne
+              og implementerer flowet.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="mailto:csm@stubtec.dk?subject=30%20minutters%20PLM-intro">Book 30 min. intro</a>
+              <a class="text-link" href="index.html#study-week">Start med en Study Week <span aria-hidden="true">↘</span></a>
+            </div>
+          </div>
+
+          <div class="thread-console reveal" aria-label="Digital thread fra engineering til forretning">
+            <div class="console-head">
+              <span>DIGITAL THREAD / LIVE MODEL</span>
+              <span class="signal"><i></i> Kontrolleret flow</span>
+            </div>
+            <div class="system-map">
+              <svg class="map-lines" viewBox="0 0 640 420" aria-hidden="true" preserveAspectRatio="none">
+                <path d="M108 72 C190 72 180 176 274 176" />
+                <path d="M108 178 C190 178 196 205 274 205" />
+                <path d="M108 286 C190 286 190 234 274 234" />
+                <path class="active-line" d="M366 205 C452 205 448 112 534 112" />
+                <path class="active-line delay" d="M366 205 C452 205 448 266 534 266" />
+                <circle cx="108" cy="72" r="4" />
+                <circle cx="108" cy="178" r="4" />
+                <circle cx="108" cy="286" r="4" />
+                <circle cx="534" cy="112" r="4" />
+                <circle cx="534" cy="266" r="4" />
+              </svg>
+              <div class="system-node node-cad" data-node="engineering">
+                <small>01 / DESIGN</small>
+                <strong>CAD + ECAD</strong>
+                <span>Geometri · tegning · build</span>
+              </div>
+              <div class="system-node node-pdm" data-node="engineering">
+                <small>02 / FILE CONTROL</small>
+                <strong>SolidWorks PDM</strong>
+                <span>Version · check-in · relation</span>
+              </div>
+              <div class="system-node node-data" data-node="it">
+                <small>03 / ORCHESTRATION</small>
+                <strong>Orchestrator</strong>
+                <span>Queue · mapping · datakvalitet</span>
+              </div>
+              <div class="system-core" data-node="all">
+                <span class="orbit orbit-one"></span>
+                <span class="orbit orbit-two"></span>
+                <div>
+                  <small>SOURCE OF TRUTH</small>
+                  <strong>ARAS<br />PLM</strong>
+                  <span>Part · BOM · release · change</span>
+                </div>
+              </div>
+              <div class="system-node node-erp" data-node="management">
+                <small>04 / BUSINESS</small>
+                <strong>ERP</strong>
+                <span>Indkøb · produktion · økonomi</span>
+              </div>
+              <div class="system-node node-use" data-node="management">
+                <small>05 / USE</small>
+                <strong>Produktion + service</strong>
+                <span>Godkendte produktdata</span>
+              </div>
+            </div>
+            <p class="console-note">Hvert system gør dét, det er bedst til. PLM ejer sammenhængen.</p>
+          </div>
+        </div>
+
+        <figure class="experience-scene shell reveal">
+          <div class="experience-media">
+            <picture>
+              <source srcset="./assets/christoffer-architecture-review.webp" type="image/webp" />
+              <img
+                src="assets/christoffer-architecture-review.jpg"
+                width="1586"
+                height="992"
+                alt="Christoffer leder et PLM-arkitekturreview med et engineeringteam foran en sammenhængende produkt- og systemmodel"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          </div>
+          <figcaption>
+            <span>ARCHITECTURE REVIEW / IN PRACTICE</span>
+            <strong>Systemansvar bliver først stærkt, når hele teamet kan se det.</strong>
+            <p>Produktstruktur, lifecycle, change og integration behandles som én sammenhængende beslutning.</p>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="problem section shell" id="problem">
+        <div class="section-intro reveal">
+          <p class="eyebrow dark">Arkitektoniske brudflader</p>
+          <h2>Fejlene opstår mellem systemerne</h2>
+          <p>
+            De enkelte platforme kan fungere korrekt, mens det samlede produktflow stadig fejler.
+            Problemet ligger typisk i uklart dataejerskab, implicitte regler og manuelle overleveringer.
+          </p>
+        </div>
+        <div class="problem-list">
+          <article class="problem-row reveal">
+            <span>01</span><h3>PDM bliver behandlet som PLM</h3>
+            <p>Filversion, part-revision og produktfrigivelse blandes sammen, selv om de har forskelligt ejerskab.</p>
+          </article>
+          <article class="problem-row reveal">
+            <span>02</span><h3>Master data har flere sandheder</h3>
+            <p>Nummer, lifecycle-state, BOM og dokumentpakke stemmer ikke nødvendigvis overens på tværs af systemerne.</p>
+          </article>
+          <article class="problem-row reveal">
+            <span>03</span><h3>Releasepakken samles manuelt</h3>
+            <p>Copy/paste til ERP skjuler manglende relationer, forkerte revisioner og ufuldstændig dokumentation.</p>
+          </article>
+          <article class="problem-row reveal">
+            <span>04</span><h3>Integrationskontrakten er implicit</h3>
+            <p>Edge cases dukker først op i DVT eller go-live, fordi states, retries og fejlansvar ikke er modelleret.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="architecture section" id="architecture">
+        <div class="shell">
+          <div class="section-intro wide reveal">
+            <p class="eyebrow">Målarkitektur</p>
+            <h2>Et tydeligt systemansvar</h2>
+            <p>
+              CAD/PDM er autoritativ for geometri, filrelationer og CAD-revisioner. Aras er
+              autoritativ for produktidentitet, EBOM, dokumentation, lifecycle, change og release.
+              ERP er autoritativ for indkøb og transaktioner og modtager kun godkendte releasepakker.
+            </p>
+          </div>
+
+          <div class="lens-switcher reveal">
+            <div class="lens-tabs" role="tablist" aria-label="Vælg perspektiv">
+              <button id="lens-tab-management" type="button" role="tab" aria-selected="true" aria-controls="lens-panel" tabindex="0" data-lens="management">Ledelse</button>
+              <button id="lens-tab-engineering" type="button" role="tab" aria-selected="false" aria-controls="lens-panel" tabindex="-1" data-lens="engineering">Engineering</button>
+              <button id="lens-tab-it" type="button" role="tab" aria-selected="false" aria-controls="lens-panel" tabindex="-1" data-lens="it">IT &amp; arkitektur</button>
+            </div>
+            <div class="lens-content" id="lens-panel" role="tabpanel" aria-labelledby="lens-tab-management" tabindex="0">
+              <p class="lens-kicker">LEDELSE</p>
+              <h3 class="lens-title">Placér release-autoriteten</h3>
+              <p class="lens-copy">
+                Ledelsesbeslutningen er, hvilket system der må erklære en produktkonfiguration frigivet, og hvem der ejer konsekvensen.
+              </p>
+              <ul class="lens-list">
+                <li>Forretningsejer for frigivet konfiguration</li>
+                <li>Bevidst valg mellem migration og arkiv</li>
+                <li>Gates fra prototype til produktion</li>
+              </ul>
+            </div>
+            <div class="architecture-stack" aria-label="Systemlag i en PLM-arkitektur">
+              <div class="arch-layer experience" data-highlight="management">
+                <span>04</span><strong>ERP · produktion · service</strong><small>Forbrug af godkendte data</small>
+              </div>
+              <div class="arch-layer plm" data-highlight="management engineering it">
+                <span>03</span><strong>Aras Innovator PLM</strong><small>Part · BOM · dokument · change · release</small>
+              </div>
+              <div class="arch-layer integration" data-highlight="it">
+                <span>02</span><strong>Orchestrator &amp; interfaces</strong><small>Events · kontrakter · mapping · monitorering</small>
+              </div>
+              <div class="arch-layer source" data-highlight="engineering it">
+                <span>01</span><strong>CAD · PDM · ECAD</strong><small>Designfiler · revisioner · build-data</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="diagram-library section" id="diagrams">
+        <div class="shell">
+          <div class="section-intro wide reveal">
+            <p class="eyebrow dark">Visuelt referencesæt</p>
+            <h2>Fem diagrammer. Ét konsistent sprog.</h2>
+            <p>
+              Det faglige indhold fra StubTEC's eksisterende diagrammer er genskabt i én stringent
+              arkitekturstandard. De kan bruges til at afklare scope, ansvar og platformvalg uden at
+              reducere emnet til en generisk systemoversigt.
+            </p>
+          </div>
+
+          <div class="diagram-tabs reveal" role="tablist" aria-label="Vælg PLM-diagram">
+            <button id="diagram-tab-thread" type="button" role="tab" aria-selected="true" aria-controls="diagram-thread" tabindex="0" data-diagram-target="diagram-thread"><span>01</span> Digital thread</button>
+            <button id="diagram-tab-lifecycle" type="button" role="tab" aria-selected="false" aria-controls="diagram-lifecycle" tabindex="-1" data-diagram-target="diagram-lifecycle"><span>02</span> PLM lifecycle</button>
+            <button id="diagram-tab-operating-model" type="button" role="tab" aria-selected="false" aria-controls="diagram-operating-model" tabindex="-1" data-diagram-target="diagram-operating-model"><span>03</span> People / process / tools</button>
+            <button id="diagram-tab-transition" type="button" role="tab" aria-selected="false" aria-controls="diagram-transition" tabindex="-1" data-diagram-target="diagram-transition"><span>04</span> Excel-PLM → Aras</button>
+            <button id="diagram-tab-framework" type="button" role="tab" aria-selected="false" aria-controls="diagram-framework" tabindex="-1" data-diagram-target="diagram-framework"><span>05</span> Aras framework</button>
+          </div>
+
+          <div class="diagram-stage reveal">
+            <figure class="diagram-panel" id="diagram-thread" role="tabpanel" aria-labelledby="diagram-tab-thread">
+              <div class="diagram-frame"><img loading="lazy" decoding="async" width="1600" height="900" src="assets/diagrams/digital-thread.svg" alt="Digital thread mellem CAD, PLM, ERP, MES og service med PLM som ryggrad" /></div>
+              <figcaption><div><span>01 / INFORMATION FLOW</span><h3>Digital thread &amp; digital twin</h3></div><p>PLM holder relationer, ændringer og godkendelser sammen. Først når tråden er stabil, giver et digitalt twin-perspektiv mening.</p><a href="assets/diagrams/digital-thread.svg" target="_blank" rel="noreferrer">Åbn i fuld størrelse ↗</a></figcaption>
+            </figure>
+            <figure class="diagram-panel" id="diagram-lifecycle" role="tabpanel" aria-labelledby="diagram-tab-lifecycle" hidden>
+              <div class="diagram-frame"><img loading="lazy" decoding="async" width="1600" height="900" src="assets/diagrams/lifecycle.svg" alt="PLM lifecycle fra idé og krav gennem design, produktion, service og feedback" /></div>
+              <figcaption><div><span>02 / LIFECYCLE</span><h3>What is PLM</h3></div><p>Produktets data, beslutninger og ændringer forbliver relaterede gennem hele livscyklussen. Feedback lukker løkken tilbage mod design og krav.</p><a href="assets/diagrams/lifecycle.svg" target="_blank" rel="noreferrer">Åbn i fuld størrelse ↗</a></figcaption>
+            </figure>
+            <figure class="diagram-panel" id="diagram-operating-model" role="tabpanel" aria-labelledby="diagram-tab-operating-model" hidden>
+              <div class="diagram-frame"><img loading="lazy" decoding="async" width="1600" height="900" src="assets/diagrams/people-process-tools.svg" alt="PLM operating model med mennesker, processer, værktøjer, metoder og data" /></div>
+              <figcaption><div><span>03 / OPERATING MODEL</span><h3>People, process &amp; tools</h3></div><p>PLM kræver sammenhæng mellem organisation, proces og platform. Data og metode forbinder disciplinerne på tværs af produktets værdikæde.</p><a href="assets/diagrams/people-process-tools.svg" target="_blank" rel="noreferrer">Åbn i fuld størrelse ↗</a></figcaption>
+            </figure>
+            <figure class="diagram-panel" id="diagram-transition" role="tabpanel" aria-labelledby="diagram-tab-transition" hidden>
+              <div class="diagram-frame"><img loading="lazy" decoding="async" width="1600" height="900" src="assets/diagrams/conventional-to-aras.svg" alt="Overgang fra Excel-baseret PLM og manuelle overleveringer til Aras Innovator" /></div>
+              <figcaption><div><span>04 / TRANSITION</span><h3>Fra Excel-PLM til Aras Innovator</h3></div><p>Overgangen flytter nummerering, struktur, approvals og change fra personbåret koordinering til en styret model med integrationer.</p><a href="assets/diagrams/conventional-to-aras.svg" target="_blank" rel="noreferrer">Åbn i fuld størrelse ↗</a></figcaption>
+            </figure>
+            <figure class="diagram-panel" id="diagram-framework" role="tabpanel" aria-labelledby="diagram-tab-framework" hidden>
+              <div class="diagram-frame"><img loading="lazy" decoding="async" width="1600" height="900" src="assets/diagrams/aras-framework.svg" alt="Sammenligning af kompilerede systemlag og Aras Innovators modelbaserede arkitektur" /></div>
+              <figcaption><div><span>05 / PLATFORM</span><h3>Aras Innovator framework</h3></div><p>Den modelbaserede platform separerer solution models fra services og data. Det ændrer, hvor forretningslogik placeres og vedligeholdes.</p><a href="assets/diagrams/aras-framework.svg" target="_blank" rel="noreferrer">Åbn i fuld størrelse ↗</a></figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="build section shell" id="build">
+        <div class="section-intro reveal">
+          <p class="eyebrow dark">Implementeringsscope</p>
+          <h2>Forretningsreglerne mellem systemerne</h2>
+          <p>
+            Platformskonfigurationen er kun én del. Den reelle løsning består af entydige invariants
+            for identitet, lifecycle, revision, relationer, release og fejlretning.
+          </p>
+        </div>
+
+        <div class="capability-grid">
+          <article class="capability reveal">
+            <span class="cap-no">01</span>
+            <div><h3>Produktmodel &amp; governance</h3><p>Parts, BOM, dokumenter, certifikater, varianter, produktstruktur og klare roller gennem hele livscyklussen.</p></div>
+          </article>
+          <article class="capability reveal">
+            <span class="cap-no">02</span>
+            <div><h3>CAD/PDM til PLM</h3><p>SolidWorks PDM, hændelsesstyret synkronisering, nummerering, filrelationer, revisionsejerskab og approval write-back.</p></div>
+          </article>
+          <article class="capability reveal">
+            <span class="cap-no">03</span>
+            <div><h3>Release til ERP</h3><p>Godkendte releasepakker med part, struktur og dokumentation til Navision, Business Central eller et andet ERP.</p></div>
+          </article>
+          <article class="capability reveal">
+            <span class="cap-no">04</span>
+            <div><h3>Migration &amp; datakvalitet</h3><p>Kontrolleret baseline, dry runs, deterministisk matching og kontroller, der finder problemer før data går i produktion.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="field-proof">
+        <div class="shell field-grid">
+          <div class="field-heading reveal">
+            <p class="eyebrow">Erfaring fra virkelige leverancer</p>
+            <h2>Arkitektur møder først virkeligheden ved den første edge case</h2>
+          </div>
+          <div class="field-copy reveal">
+            <p>
+              StubTECs metode er formet af komplekse PLM-miljøer og nyere end-to-end leverancer med
+              Aras Innovator, SolidWorks PDM og ERP. Arbejdet omfatter både målarkitektur, kode,
+              datamigrering, test, produktionsopsætning og handover.
+            </p>
+            <div class="field-flow" aria-label="Leveranceforløb">
+              <span>Lifecycle</span><i></i><span>Integration</span><i></i><span>DVT</span><i></i><span>Go-live</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="delivery section shell" id="delivery">
+        <div class="section-intro reveal">
+          <p class="eyebrow dark">Leverancemodel</p>
+          <h2>Start dér, hvor beslutningen er</h2>
+          <p>StubTEC kan afklare retningen, etablere fundamentet eller tage ansvar for et helt integrationsspor.</p>
+        </div>
+
+        <div class="offer-list">
+          <article class="offer reveal">
+            <div class="offer-number">01</div>
+            <div class="offer-title"><small>Beslutning</small><h3>PLM Study Week</h3></div>
+            <p>Fem fokuserede dage, der gør scope, systemansvar, risici og næste investering konkret.</p>
+            <a href="index.html#study-week">Se forløbet <span aria-hidden="true">↘</span></a>
+          </article>
+          <article class="offer reveal">
+            <div class="offer-number">02</div>
+            <div class="offer-title"><small>Fundament</small><h3>Aras Quickstart</h3></div>
+            <p>Et minimalt, brugbart PLM-flow med produktmodel, lifecycle, rettigheder og de første arbejdsgange.</p>
+            <a href="mailto:csm@stubtec.dk?subject=Aras%20Quickstart">Tal om scope <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="offer reveal">
+            <div class="offer-number">03</div>
+            <div class="offer-title"><small>Bevis</small><h3>Integration Pilot</h3></div>
+            <p>Et end-to-end flow med ægte data fra CAD/PDM gennem PLM og videre mod ERP.</p>
+            <a href="mailto:csm@stubtec.dk?subject=PLM%20Integration%20Pilot">Drøft pilot <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="offer reveal">
+            <div class="offer-number">04</div>
+            <div class="offer-title"><small>Skalering</small><h3>Arkitektur &amp; delivery</h3></div>
+            <p>Tværgående ansvar for roadmap, governance, implementation, test og overdragelse til jeres eget team.</p>
+            <a href="mailto:csm@stubtec.dk?subject=PLM%20arkitektur%20og%20delivery">Beskriv behovet <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+      </section>
+
+      <section class="study-week section" id="study-week">
+        <div class="shell study-grid">
+          <div class="study-copy reveal">
+            <p class="eyebrow">PLM Study Week</p>
+            <h2>Fem dage fra spredte problemer til én beslutningsklar plan</h2>
+            <p>
+              Forløbet samler ledelse, engineering og IT om det samme billede. Resultatet er et
+              konkret beslutningsgrundlag, ikke en generisk PLM-rapport.
+            </p>
+            <a class="button button-light" href="mailto:csm@stubtec.dk?subject=Book%20PLM%20Study%20Week">Book en afklaring</a>
+          </div>
+          <ol class="week-plan reveal">
+            <li><span>Dag 1</span><strong>Forretning og smertepunkter</strong><small>Beslutning, ambition og afgrænsning</small></li>
+            <li><span>Dag 2</span><strong>Data og systemansvar</strong><small>CAD/PDM, ECAD, PLM, ERP og ejerskab</small></li>
+            <li><span>Dag 3</span><strong>Processer og lifecycle</strong><small>New part, change, release og konfiguration</small></li>
+            <li><span>Dag 4</span><strong>Målarkitektur og risici</strong><small>Integration, migration, sikkerhed og adoption</small></li>
+            <li><span>Dag 5</span><strong>Beslutningspakken</strong><small>Scope, faseplan, leverancer og næste skridt</small></li>
+          </ol>
+          <div class="study-output reveal">
+            <span>OUTPUT</span>
+            <p>As-is / to-be</p><p>Arkitekturkort</p><p>Scope boundaries</p><p>Risikolog</p><p>Faseplan</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="principles section shell">
+        <div class="section-intro reveal">
+          <p class="eyebrow dark">Arbejdsprincipper</p>
+          <h2>Kontrol skal føles let i hverdagen</h2>
+        </div>
+        <div class="principle-lines">
+          <div class="reveal"><strong>01</strong><h3>Én ejer pr. sandhed</h3><p>CAD, PLM og ERP får tydelige roller. Ingen systemer konkurrerer om at være master.</p></div>
+          <div class="reveal"><strong>02</strong><h3>Virkelige data tidligt</h3><p>Integration og migration bevises med rigtige produkter, relationer og fejlscenarier.</p></div>
+          <div class="reveal"><strong>03</strong><h3>Minimal proces først</h3><p>Få felter, klare states og de nødvendige approvals. Mere funktionalitet kommer, når fundamentet virker.</p></div>
+          <div class="reveal"><strong>04</strong><h3>Handover er en leverance</h3><p>Dokumentation, drift og kompetenceopbygning gør kunden i stand til at eje løsningen.</p></div>
+        </div>
+      </section>
+
+      <section class="about section" id="about">
+        <div class="shell about-grid">
+          <div class="about-signature reveal" aria-hidden="true">
+            <span>CSM</span>
+            <div>BUSINESS<br />INFORMATION<br />TECHNOLOGY</div>
+          </div>
+          <div class="about-copy reveal">
+            <p class="eyebrow">Om StubTEC</p>
+            <h2>Senior arkitektur med hænderne i leverancen</h2>
+            <p class="about-lead">
+              StubTEC er grundlagt af Christoffer Stub Michelsen, ingeniør og PLM-arkitekt med mere
+              end 13 års erfaring på tværs af forretning, information og teknologi.
+            </p>
+            <p>
+              Erfaringen spænder fra business analysis og enterprise architecture til Aras Innovator,
+              produktkonfiguration, migration og eventdrevne integrationer. Metoderne omfatter TOGAF,
+              ArchiMate, UML og domain-driven design, men leverancen måles på, om produktflowet virker.
+            </p>
+            <div class="about-tags" aria-label="Fagområder">
+              <span>Aras Innovator</span><span>SolidWorks PDM</span><span>TOGAF</span><span>ArchiMate</span><span>Integration</span>
+            </div>
+            <a class="text-link light" href="https://dk.linkedin.com/in/christofferstubmichelsenaras" target="_blank" rel="noreferrer">LinkedIn-profil <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact" id="contact">
+        <div class="shell contact-grid">
+          <div class="reveal">
+            <p class="eyebrow dark">Næste skridt</p>
+            <h2>Fortæl hvor produktdata går i stykker</h2>
+          </div>
+          <div class="contact-action reveal">
+            <p>
+              Send jeres systemlandskab og to eller tre konkrete smertepunkter. Du får et ærligt bud
+              på, om næste skridt bør være en Study Week, en pilot eller noget mindre.
+            </p>
+            <a class="email-link" href="mailto:csm@stubtec.dk?subject=PLM%20afklaring">
+              <span>csm@stubtec.dk</span><i aria-hidden="true">↗</i>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <a class="brand footer-brand" href="index.html#top"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Stub<span>TEC</span></span></a>
+        <p>PLM-arkitektur, Aras Innovator og integration fra Fredensborg, Danmark.</p>
+        <div><a href="index.html#architecture">Arkitektur</a><a href="index.html#delivery">Leverancer</a><a href="mailto:csm@stubtec.dk">Kontakt</a></div>
+        <small>© <span data-year></span> StubTEC PLM ApS</small>
+      </div>
+    </footer>
+  <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4be558a085ec3e1',t:'MTc5MjIyOTk0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

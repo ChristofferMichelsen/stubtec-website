@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Transition from Excel PLM to Aras Innovator</title>
+  <desc id="desc">A conventional setup routes CAD, spreadsheets, email and shared-drive data through a release manager bottleneck before ERP. The target architecture places Aras Innovator at the center with governed interfaces to CAD, ECAD, ERP and quality.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.025"/></pattern>
+    <marker id="arrow-muted" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L11 5.5L0 11Z" fill="#66717f"/></marker>
+    <marker id="arrow-red" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L11 5.5L0 11Z" fill="#e0555c"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.26"/></filter>
+    <style>.sans{font-family:Inter,Segoe UI,Arial,sans-serif}.mono{font-family:SFMono-Regular,Consolas,monospace}.label{font-size:16px;letter-spacing:2.6px;font-weight:700}.title{font-size:52px;font-weight:780;letter-spacing:-2px}.sub{font-size:21px;fill:#aab3bf}.state{font-size:14px;letter-spacing:2px;font-weight:700}.pane-title{font-size:30px;font-weight:790;fill:#f3f5f7}.pane-copy{font-size:16px;fill:#8f99a7}.node{font-size:19px;font-weight:740;fill:#f3f5f7}.node-copy{font-size:14px;fill:#919ba8}.core{font-size:33px;font-weight:820;fill:#ffffff}.result{font-size:16px;font-weight:720;fill:#f3f5f7}.footer{font-size:14px;letter-spacing:1.7px;fill:#76808e}</style>
+  </defs>
+  <rect width="1600" height="900" fill="#0b0f14"/><rect width="1600" height="900" fill="url(#grid)"/><rect width="14" height="900" fill="#c3262e"/>
+  <g class="sans">
+    <text x="70" y="55" class="label" fill="#e0555c">STUBTEC / TRANSITION ARCHITECTURE / 04</text>
+    <text x="70" y="122" class="title" fill="#f3f5f7">From “Excel-PLM” to governed product data</text>
+    <text x="70" y="160" class="sub">The change is architectural: release authority moves from a person-dependent handoff into a controlled model.</text>
+    <line x1="70" y1="194" x2="1530" y2="194" stroke="#2b3343"/>
+
+    <g filter="url(#shadow)">
+      <rect x="70" y="224" width="650" height="574" rx="18" fill="#111821" stroke="#2b3343"/>
+      <rect x="70" y="224" width="650" height="94" rx="18" fill="#161b23"/><rect x="70" y="300" width="650" height="18" fill="#161b23"/>
+      <text x="104" y="258" class="mono state" fill="#8993a0">BEFORE / PERSON-DEPENDENT</text><text x="104" y="296" class="pane-title">Conventional setup</text>
+      <text x="104" y="344" class="pane-copy">Many stores · manual coordination · implicit release rules</text>
+
+      <rect x="104" y="378" width="242" height="88" rx="10" fill="#151c25" stroke="#303948"/><text x="128" y="413" class="node">CAD + PDM</text><text x="128" y="442" class="node-copy">Files · versions · check-in/out</text>
+      <rect x="366" y="378" width="320" height="88" rx="10" fill="#1c171a" stroke="#603038"/><text x="390" y="413" class="node">Spreadsheets</text><text x="390" y="442" class="node-copy">Parts · BOM · approvals · numbering</text>
+      <rect x="104" y="482" width="242" height="88" rx="10" fill="#1c171a" stroke="#603038"/><text x="128" y="517" class="node">Email + chat</text><text x="128" y="546" class="node-copy">Requests · decisions · exceptions</text>
+      <rect x="366" y="482" width="320" height="88" rx="10" fill="#1c171a" stroke="#603038"/><text x="390" y="517" class="node">Shared drives</text><text x="390" y="546" class="node-copy">PDF · STEP · final_v7_really</text>
+
+      <path d="M225 570V604H278M526 570V604H508" fill="none" stroke="#66717f" stroke-width="2" marker-end="url(#arrow-muted)"/>
+      <rect x="238" y="604" width="314" height="92" rx="12" fill="#35191d" stroke="#c3262e" stroke-width="2"/>
+      <text x="395" y="641" text-anchor="middle" class="node">Release manager bottleneck</text><text x="395" y="670" text-anchor="middle" class="node-copy">Rules · gatekeeping · copy/paste</text>
+      <path d="M395 696V722" stroke="#e0555c" stroke-width="3" marker-end="url(#arrow-red)"/>
+      <rect x="288" y="730" width="214" height="48" rx="8" fill="#151c25" stroke="#303948"/><text x="395" y="760" text-anchor="middle" class="result">ERP receives a package</text>
+    </g>
+
+    <g>
+      <path d="M750 474H838" stroke="#c3262e" stroke-width="4" marker-end="url(#arrow-red)"/>
+      <text x="794" y="442" text-anchor="middle" class="mono state" fill="#e0555c">REDESIGN</text>
+      <text x="794" y="520" text-anchor="middle" class="mono node-copy">SYSTEM</text><text x="794" y="541" text-anchor="middle" class="mono node-copy">BOUNDARIES</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="880" y="224" width="650" height="574" rx="18" fill="#111821" stroke="#c3262e" stroke-width="1.5"/>
+      <rect x="880" y="224" width="650" height="94" rx="18" fill="#c3262e"/><rect x="880" y="300" width="650" height="18" fill="#c3262e"/>
+      <text x="914" y="258" class="mono state" fill="#ffffff">AFTER / MODEL-BASED</text><text x="914" y="296" class="pane-title">Aras Innovator</text>
+      <text x="914" y="344" class="pane-copy">One release authority · explicit interfaces · governed change</text>
+
+      <rect x="1080" y="423" width="250" height="190" rx="20" fill="#c3262e"/>
+      <text x="1205" y="471" text-anchor="middle" class="mono state" fill="#ffffff">SYSTEM OF RECORD</text><text x="1205" y="519" text-anchor="middle" class="core">ARAS PLM</text>
+      <text x="1205" y="554" text-anchor="middle" class="node-copy" fill="#ffffff">Part · EBOM · docs</text><text x="1205" y="580" text-anchor="middle" class="node-copy" fill="#ffffff">Change · lifecycle · release</text>
+
+      <rect x="914" y="374" width="146" height="88" rx="10" fill="#172332" stroke="#365477"/><text x="987" y="408" text-anchor="middle" class="node">CAD / PDM</text><text x="987" y="437" text-anchor="middle" class="node-copy">Design authority</text>
+      <rect x="914" y="574" width="146" height="88" rx="10" fill="#172332" stroke="#365477"/><text x="987" y="608" text-anchor="middle" class="node">ECAD</text><text x="987" y="637" text-anchor="middle" class="node-copy">Build authority</text>
+      <rect x="1350" y="374" width="146" height="88" rx="10" fill="#20201a" stroke="#6b6232"/><text x="1423" y="408" text-anchor="middle" class="node">ERP</text><text x="1423" y="437" text-anchor="middle" class="node-copy">Transactions</text>
+      <rect x="1350" y="574" width="146" height="88" rx="10" fill="#20201a" stroke="#6b6232"/><text x="1423" y="608" text-anchor="middle" class="node">Quality</text><text x="1423" y="637" text-anchor="middle" class="node-copy">Evidence</text>
+      <path d="M1060 418H1080M1060 618H1080M1330 418H1350M1330 618H1350" stroke="#66717f" stroke-width="2"/>
+
+      <rect x="914" y="696" width="582" height="64" rx="10" fill="#141d28" stroke="#303948"/>
+      <text x="1205" y="723" text-anchor="middle" class="mono state" fill="#e0555c">RESULT</text><text x="1205" y="747" text-anchor="middle" class="result">Governed change · traceable release · recoverable integration</text>
+    </g>
+
+    <line x1="70" y1="842" x2="1530" y2="842" stroke="#2b3343"/><text x="70" y="872" class="mono footer">STUBTEC / TRANSITION / REMOVE THE BOTTLENECK, PRESERVE THE CONTROL</text><text x="1530" y="872" text-anchor="end" class="mono footer">PLM-REF-04</text>
+  </g>
+</svg>

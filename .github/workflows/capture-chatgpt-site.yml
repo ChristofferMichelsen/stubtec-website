@@ -1,0 +1,54 @@
+name: Inspect published ChatGPT Site (no production deploy)
+
+on:
+  push:
+    branches:
+      - chatgpt-site-capture-20261017
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch public page and page requisites
+        shell: bash
+        run: |
+          set -uo pipefail
+          SITE="https://stubtec-plm.flifoffer.chatgpt.site/"
+          mkdir -p site-capture/mirror
+          printf '%s\n' "$SITE" > site-capture/source-url.txt
+          curl -L -sS --max-time 50 --connect-timeout 15 \
+            -A "Mozilla/5.0 (compatible; StubTEC-site-migration/1.0)" \
+            -D site-capture/headers.txt \
+            -o site-capture/response.html \
+            -w '%{http_code}\n' "$SITE" > site-capture/http-status.txt
+          rc=$?
+          printf 'curl exit status: %s\n' "$rc" | tee site-capture/fetch-result.txt
+          if [ "$rc" -eq 0 ] && [ "$(cat site-capture/http-status.txt)" = "200" ]; then
+            wget -q --recursive --level=1 --page-requisites \
+              --convert-links --adjust-extension --no-parent \
+              --domains=stubtec-plm.flifoffer.chatgpt.site \
+              --quota=25m --timeout=25 --tries=2 \
+              --directory-prefix=site-capture/mirror \
+              "$SITE" || true
+            echo "Downloaded file inventory:"
+            find site-capture -type f -printf '%p (%s bytes)\n' | head -80
+          else
+            echo "The published site could not be fetched as public source assets."
+          fi
+      - name: Commit inspection capture to review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site-capture
+          if ! git diff --cached --quiet; then
+            git commit -m "Capture publicly served ChatGPT Site assets for migration review"
+            git push origin HEAD:chatgpt-site-capture-20261017
+          fi
