@@ -81,6 +81,21 @@ jobs:
           
           startup-command: 'node server.js'
 
+      - name: Verify official domain displays this exact release
+        shell: bash
+        run: |
+          URL="https://www.stubtec.dk/"
+          for attempt in $(seq 1 20); do
+            if curl --fail --location --silent --show-error --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$URL?deployment-test=20261017" -o /tmp/stubtec-live.html && grep -q 'STUBTEC-DEPLOY-20261017' /tmp/stubtec-live.html; then
+              echo "Verified: www.stubtec.dk serves release STUBTEC-DEPLOY-20261017."
+              exit 0
+            fi
+            echo "Waiting for domain and HTTPS propagation ($attempt/20)..."
+            sleep 15
+          done
+          echo "::error::The live domain did not return the deployment marker. Check CNAME and App Service binding."
+          exit 1
+
       - name: Verify staging serves the Next.js homepage
         shell: bash
         run: |
