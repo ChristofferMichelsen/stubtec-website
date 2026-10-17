@@ -9,7 +9,7 @@ export type MarketingPage = {
   body: string;
 };
 
-const contactCta = '<div class="page-cta"><div><span class="eyebrow">Næste skridt</span><h2>Få et konkret næste skridt for jeres produktdata.</h2><p>Beskriv kort systemlandskabet og det største problem. Så tager vi en faglig afklaring uden at love en platform, før behovet er forstået.</p></div><a class="button button-primary" href="/kontakt">Anmod om en samtale ↗</a></div>';
+const contactCta = '<div class="page-cta"><div><span class="eyebrow">Næste skridt</span><h2>Få et konkret næste skridt for jeres produktdata.</h2><p>Beskriv kort systemlandskabet og det største problem. Så tager vi en faglig afklaring uden at love en platform, før behovet er forstået.</p></div><div class="booking-actions"><a class="button button-primary" href="https://calendly.com/stubmic/30min" target="_blank" rel="noopener noreferrer">Book 30 min. ↗</a><a class="text-link light" href="/kontakt">Skriv til os ↗</a></div></div>';
 
 export const marketingPages: Record<string, MarketingPage> = {
   'aras-innovator': {
@@ -181,7 +181,7 @@ export const marketingPages: Record<string, MarketingPage> = {
     headline: 'Fortæl hvor produktdata mister sammenhængen.',
     intro: 'Vi starter med en konkret faglig afklaring. Beskriv jeres systemer, den vigtigste udfordring og hvad I har brug for at beslutte.',
     body: `
-      <section class="page-section shell"><div class="contact-page-grid"><div><p class="eyebrow dark">DIREKTE KONTAKT</p><h2>En kvalificeret samtale frem for en standarddemo.</h2><p>Du kan skrive direkte til <a href="mailto:csm@stubtec.dk">csm@stubtec.dk</a>. Brug formularen til at klargøre en e-mail – du kan gennemse og afsende den i din egen mail-app.</p><p>En 30-minutters introduktion aftales efter henvendelse. En separat onlinebooking bliver først tilgængelig, når en verificeret bookingadresse er tilknyttet.</p></div>
+      <section class="page-section shell"><div class="contact-page-grid"><div><p class="eyebrow dark">DIREKTE KONTAKT</p><h2>En kvalificeret samtale frem for en standarddemo.</h2><p>Book direkte via <a href="https://calendly.com/stubmic/30min" target="_blank" rel="noopener noreferrer">Calendly (30 minutter) ↗</a>, eller skriv til <a href="mailto:csm@stubtec.dk">csm@stubtec.dk</a>. Formularen klargør en e-mail i din egen mail-app.</p><p>Du kan booke en 30-minutters videointroduktion direkte via Calendly. Alternativt kan du beskrive behovet i formularen nedenfor og sende en e-mail.</p></div>
         <form id="inquiry-form" class="brief-form" novalidate>
           <div class="form-row"><label for="inquiry-name">Navn <span aria-hidden="true">*</span></label><input id="inquiry-name" name="name" autocomplete="name" required maxlength="120" /></div>
           <div class="form-row"><label for="inquiry-email">E-mail <span aria-hidden="true">*</span></label><input id="inquiry-email" name="email" type="email" autocomplete="email" required maxlength="160" /></div>
@@ -222,7 +222,7 @@ export const marketingPages: Record<string, MarketingPage> = {
         <h2>Data ved henvendelser</h2><p>Kontaktformularen på denne hjemmeside klargør en e-mail i din egen mail-app. Formularens indhold sendes ikke automatisk til en server på hjemmesiden. Hvis du vælger at afsende e-mailen, modtager StubTEC de oplysninger, du har skrevet.</p>
         <h2>Formål og kontakt</h2><p>Oplysninger fra direkte henvendelser anvendes til at behandle forespørgslen og følge op på en eventuel dialog om rådgivning eller leverance. Kontakt <a href="mailto:csm@stubtec.dk">csm@stubtec.dk</a> med spørgsmål om din henvendelse eller med anmodninger vedrørende dine oplysninger.</p>
         <h2>Teknisk drift</h2><p>Websitet hostes via Azure. Der kan indgå nødvendige tekniske logs og sikkerhedsfunktioner i hosting og netværksdrift. Denne tekst er en kort beskrivelse af webstedets kontaktflow, ikke en fuldstændig fortegnelse over alle underleverandører og deres opbevaringsperioder.</p>
-        <h2>Booking og statistik</h2><p>Der er i denne version ingen integreret tredjeparts bookingfunktion i selve webstedet. En eventuel senere booking- eller analyseintegration kræver opdateret databeskrivelse, før den tages i brug.</p>
+        <h2>Booking og statistik</h2><p>Direkte mødebooking går via et eksternt Calendly-link. Calendly behandler bookingoplysninger efter egne vilkår og privatlivsoplysninger. Selve webstedet indlæser ikke et Calendly-embed, før besøgende aktivt åbner linket.</p>
         <p><small>Senest revideret 17. oktober 2026. Uddybende information om behandlingsgrundlag og opbevaringsperioder kan efterspørges på e-mail.</small></p>
       </section>
     `
