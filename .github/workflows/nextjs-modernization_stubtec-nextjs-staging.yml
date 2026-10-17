@@ -29,6 +29,31 @@ jobs:
         with:
           node-version: '22.x'
 
+      - name: Inline site CSS and JavaScript before build
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path('public/index.html')
+          html = page.read_text(encoding='utf-8')
+          css = Path('public/styles.css').read_text(encoding='utf-8')
+          js = Path('public/site.js').read_text(encoding='utf-8')
+          css_ref = '<link rel="stylesheet" href="/static-resource?name=styles.css" />'
+          js_ref = '<script src="/static-resource?name=site.js" defer></script>'
+          assert html.count(css_ref) == 1, 'Expected one CSS reference'
+          assert html.count(js_ref) == 1, 'Expected one JS reference'
+          assert len(css) > 25000 and len(js) > 6000, 'Unexpected empty site assets'
+          assert '</style' not in css.lower() and '</script' not in js.lower()
+          html = html.replace(css_ref, '<style data-stubtec-inline-css>\n' + css + '\n</style>')
+          html = html.replace(js_ref, '')
+          assert html.count('</body>') == 1
+          html = html.replace('</body>', '<script data-stubtec-inline-js>\n' + js + '\n</script>\n</body>')
+          assert 'data-stubtec-inline-css' in html and 'data-stubtec-inline-js' in html
+          page.write_text(html, encoding='utf-8')
+          print(f'Inlined {len(css)} CSS and {len(js)} JS characters into {len(html)} HTML characters')
+          PY
+
       - name: Install dependencies and build Next.js
         run: |
           npm install --no-audit --no-fund
@@ -95,7 +120,7 @@ jobs:
             OK=0
             for attempt in $(seq 1 16); do
               STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
-              if [ "$STATUS" = "200" ] && grep -q 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow' /tmp/stubtec-check.html && grep -q '/static-resource?name=styles.css' /tmp/stubtec-check.html; then
+              if [ "$STATUS" = "200" ] && grep -q 'StubTEC PLM | Aras, CAD/PDM og ERP i ét produktflow' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-css' /tmp/stubtec-check.html && grep -q 'data-stubtec-inline-js' /tmp/stubtec-check.html && [ "$(wc -c < /tmp/stubtec-check.html)" -gt 60000 ]; then
                 echo "PASS: $HOST serves the new StubTEC PLM homepage."
                 OK=1
                 break
@@ -110,10 +135,14 @@ jobs:
             fi
           done
 
-          echo "Verifying production CSS, JavaScript, SVG and photo assets."
+          echo "Verifying inlined CSS/JavaScript plus separately served SVG and photo assets."
           for HOST in "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/" "https://www.stubtec.dk/"; do
-            for NAME in styles.css site.js assets/diagrams/digital-thread.svg assets/christoffer-architecture-review.jpg; do
-              CODE=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -D /tmp/asset-headers.txt -o /tmp/stubtec-asset -w '%{http_code}' "${HOST}static-resource?name=${NAME}&verify-release=${GITHUB_SHA}" || true)
+            for NAME in assets/diagrams/digital-thread.svg assets/diagrams/lifecycle.svg assets/diagrams/people-process-tools.svg assets/diagrams/conventional-to-aras.svg assets/diagrams/aras-framework.svg assets/christoffer-architecture-review.jpg; do
+              for ATTEMPT in 1 2 3 4; do
+                CODE=$(curl --location --silent --show-error --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' -D /tmp/asset-headers.txt -o /tmp/stubtec-asset -w '%{http_code}' "${HOST}static-resource?name=${NAME}&verify-release=${GITHUB_SHA}" || true)
+                if [ "$CODE" = "200" ]; then break; fi
+                sleep 5
+              done
               if [ "$CODE" != "200" ]; then
                 echo "::error::Missing asset ${HOST}${NAME}: HTTP $CODE"
                 exit 1
