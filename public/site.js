@@ -127,21 +127,52 @@ selectLens('management', false);
 
 const diagramTabs = Array.from(document.querySelectorAll('[data-diagram-target]'));
 const diagramPanels = Array.from(document.querySelectorAll('.diagram-panel'));
+const diagramStage = document.querySelector('.diagram-stage');
+const diagramDots = Array.from(document.querySelectorAll('[data-diagram-dot]'));
+const diagramCounter = document.querySelector('[data-diagram-current]');
+const diagramPrevious = document.querySelector('[data-diagram-prev]');
+const diagramNext = document.querySelector('[data-diagram-next]');
+const diagramMobileQuery = window.matchMedia('(max-width: 760px)');
+let selectedDiagramIndex = 0;
+let diagramScrollPending = false;
 
-function selectDiagram(panelId, moveFocus) {
-  let activeTab = null;
-  diagramTabs.forEach(function (tab) {
-    const selected = tab.dataset.diagramTarget === panelId;
+function scrollDiagramIntoView(index, animate) {
+  if (!diagramMobileQuery.matches || !diagramStage || !diagramPanels[index]) return;
+  const stageRect = diagramStage.getBoundingClientRect();
+  const panelRect = diagramPanels[index].getBoundingClientRect();
+  const left = Math.max(0, diagramStage.scrollLeft + panelRect.left - stageRect.left);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  diagramStage.scrollTo({ left: left, behavior: animate && !reducedMotion ? 'smooth' : 'instant' });
+}
+
+function activateDiagram(index, moveFocus, scrollToSlide) {
+  if (!diagramTabs.length || !diagramPanels.length) return;
+  selectedDiagramIndex = Math.max(0, Math.min(diagramPanels.length - 1, index));
+
+  diagramTabs.forEach(function (tab, tabIndex) {
+    const selected = tabIndex === selectedDiagramIndex;
     tab.setAttribute('aria-selected', String(selected));
     tab.tabIndex = selected ? 0 : -1;
-    if (selected) activeTab = tab;
   });
-  diagramPanels.forEach(function (panel) { panel.hidden = panel.id !== panelId; });
-  if (moveFocus && activeTab) activeTab.focus();
+
+  diagramPanels.forEach(function (panel, panelIndex) {
+    panel.hidden = !diagramMobileQuery.matches && panelIndex !== selectedDiagramIndex;
+    panel.classList.toggle('is-current', panelIndex === selectedDiagramIndex);
+  });
+
+  diagramDots.forEach(function (dot, dotIndex) {
+    dot.setAttribute('aria-pressed', String(dotIndex === selectedDiagramIndex));
+  });
+  if (diagramCounter) diagramCounter.textContent = String(selectedDiagramIndex + 1).padStart(2, '0');
+  if (diagramPrevious) diagramPrevious.disabled = selectedDiagramIndex === 0;
+  if (diagramNext) diagramNext.disabled = selectedDiagramIndex === diagramPanels.length - 1;
+
+  if (moveFocus && diagramTabs[selectedDiagramIndex]) diagramTabs[selectedDiagramIndex].focus();
+  if (scrollToSlide) scrollDiagramIntoView(selectedDiagramIndex, true);
 }
 
 diagramTabs.forEach(function (tab, index) {
-  tab.addEventListener('click', function () { selectDiagram(tab.dataset.diagramTarget, false); });
+  tab.addEventListener('click', function () { activateDiagram(index, false, true); });
   tab.addEventListener('keydown', function (event) {
     if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].indexOf(event.key) === -1) return;
     event.preventDefault();
@@ -150,10 +181,55 @@ diagramTabs.forEach(function (tab, index) {
     if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + diagramTabs.length) % diagramTabs.length;
     if (event.key === 'Home') nextIndex = 0;
     if (event.key === 'End') nextIndex = diagramTabs.length - 1;
-    selectDiagram(diagramTabs[nextIndex].dataset.diagramTarget, true);
+    activateDiagram(nextIndex, true, false);
   });
 });
-if (diagramTabs.length) selectDiagram(diagramTabs[0].dataset.diagramTarget, false);
+
+diagramDots.forEach(function (dot, index) {
+  dot.addEventListener('click', function () { activateDiagram(index, false, true); });
+});
+if (diagramPrevious) diagramPrevious.addEventListener('click', function () {
+  activateDiagram(selectedDiagramIndex - 1, false, true);
+});
+if (diagramNext) diagramNext.addEventListener('click', function () {
+  activateDiagram(selectedDiagramIndex + 1, false, true);
+});
+
+if (diagramStage) {
+  diagramStage.addEventListener('scroll', function () {
+    if (!diagramMobileQuery.matches || diagramScrollPending) return;
+    diagramScrollPending = true;
+    requestAnimationFrame(function () {
+      diagramScrollPending = false;
+      const left = diagramStage.getBoundingClientRect().left;
+      let closestIndex = selectedDiagramIndex;
+      let smallestDistance = Infinity;
+      diagramPanels.forEach(function (panel, index) {
+        const distance = Math.abs(panel.getBoundingClientRect().left - left);
+        if (distance < smallestDistance) {
+          smallestDistance = distance;
+          closestIndex = index;
+        }
+      });
+      if (closestIndex !== selectedDiagramIndex) activateDiagram(closestIndex, false, false);
+    });
+  }, { passive: true });
+}
+
+function handleDiagramViewportChange() {
+  activateDiagram(selectedDiagramIndex, false, false);
+  if (diagramMobileQuery.matches) {
+    requestAnimationFrame(function () { scrollDiagramIntoView(selectedDiagramIndex, false); });
+  } else if (diagramStage) {
+    diagramStage.scrollLeft = 0;
+  }
+}
+if (typeof diagramMobileQuery.addEventListener === 'function') {
+  diagramMobileQuery.addEventListener('change', handleDiagramViewportChange);
+} else if (typeof diagramMobileQuery.addListener === 'function') {
+  diagramMobileQuery.addListener(handleDiagramViewportChange);
+}
+if (diagramTabs.length) activateDiagram(0, false, false);
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealElements = Array.from(document.querySelectorAll('.reveal'));
