@@ -142,11 +142,12 @@ jobs:
                   assert.equal(state.visiblePanels,1);
                   assert.equal(state.desktopTabs,'grid');
                   await page.click('#diagram-tab-lifecycle');
+                  await wait(1400); // Let entrance animations finish before color-contrast measurements.
                   assert(await page.$eval('#diagram-lifecycle',p=>!p.hidden),'Desktop second tab switches panel');
                   assert(await page.$eval('#diagram-tab-lifecycle',t=>t.getAttribute('aria-selected')==='true'));
                   await page.screenshot({path:'gallery-screenshots/desktop-second.png'});
                   const result=await new AxePuppeteer(page).analyze();
-                  console.log('AXE_DESKTOP',JSON.stringify(result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}))));
+                  console.log('AXE_DESKTOP',JSON.stringify(result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,10).map(n=>({target:n.target,reason:n.failureSummary}))}))));
                   assert(!result.violations.some(v=>v.impact==='serious'||v.impact==='critical'),'No serious desktop accessibility violations');
                 }
                 assert.deepEqual(errors,[],'No JavaScript runtime errors');
