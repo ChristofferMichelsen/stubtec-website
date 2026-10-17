@@ -81,32 +81,30 @@ jobs:
           
           startup-command: 'node server.js'
 
-      - name: Verify official domain displays this exact release
-        shell: bash
+      - name: Restart Azure web app to activate newly deployed standalone server
         run: |
-          URL="https://www.stubtec.dk/"
-          for attempt in $(seq 1 20); do
-            if curl --fail --location --silent --show-error --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$URL?deployment-test=20261017" -o /tmp/stubtec-live.html && grep -q 'STUBTEC-DEPLOY-20261017' /tmp/stubtec-live.html; then
-              echo "Verified: www.stubtec.dk serves release STUBTEC-DEPLOY-20261017."
-              exit 0
-            fi
-            echo "Waiting for domain and HTTPS propagation ($attempt/20)..."
-            sleep 15
-          done
-          echo "::error::The live domain did not return the deployment marker. Check CNAME and App Service binding."
-          exit 1
+          az webapp restart --name stubtec-nextjs-staging --resource-group stubtec-nextjs-staging_group
 
-      - name: Verify staging serves the Next.js homepage
+      - name: Verify current release on staging and public domain
         shell: bash
         run: |
-          URL="https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/"
-          for attempt in $(seq 1 24); do
-            if curl --fail --location --silent --show-error --connect-timeout 10 --max-time 20 "$URL" -o /tmp/stubtec-response.html && grep -q 'Connect engineering' /tmp/stubtec-response.html; then
-              echo "Staging website responds with the expected StubTec homepage."
-              exit 0
+          set -euo pipefail
+          for HOST in "https://stubtec-nextjs-staging-gxencfhtc6dfhph7.swedencentral-01.azurewebsites.net/" "https://www.stubtec.dk/"; do
+            echo "Checking $HOST"
+            OK=0
+            for attempt in $(seq 1 16); do
+              STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
+              if [ "$STATUS" = "200" ] && grep -q 'Hej world' /tmp/stubtec-check.html && grep -q 'globals' /tmp/stubtec-check.html; then
+                echo "PASS: $HOST returns Hej world and Next.js styling."
+                OK=1
+                break
+              fi
+              echo "Attempt $attempt/16: HTTP $STATUS; current page includes:"
+              grep -o -m1 -E 'Hej world|Connect engineering|Control complexity' /tmp/stubtec-check.html || true
+              sleep 12
+            done
+            if [ "$OK" != 1 ]; then
+              echo "::error::$HOST still does not serve Hej world after deployment and restart."
+              exit 1
             fi
-            echo "Waiting for Next.js to start (attempt $attempt/24)..."
-            sleep 10
           done
-          echo "::error::Azure deployment finished but the expected homepage did not become available."
-          exit 1
