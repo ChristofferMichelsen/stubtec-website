@@ -39,7 +39,7 @@ img, svg { max-width: 100%; }
 h1, h2, h3, p, li, figcaption { overflow-wrap: break-word; }
 [id] { scroll-margin-top: 86px; }
 .shell { width: calc(100% - 48px); max-width: 1180px; margin-left: auto; margin-right: auto; }
-.hero-grid > *, .section-intro > *, .problem-row > *, .lens-switcher > *, .diagram-panel figcaption > *, .capability-grid > *, .field-grid > *, .offer > *, .study-grid > *, .about-grid > *, .contact-grid > *, .footer-grid > * { min-width: 0; }
+.hero-grid > *, .section-intro > *, .problem-row > *, .lens-switcher > *, .diagram-panel .diagram-caption > *, .capability-grid > *, .field-grid > *, .offer > *, .study-grid > *, .about-grid > *, .contact-grid > *, .footer-grid > * { min-width: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; left: 16px; top: 10px; left: max(16px, env(safe-area-inset-left)); top: max(10px, env(safe-area-inset-top)); transform: translateY(-180%); z-index: 100; background: var(--mint); color: var(--white); padding: 10px 14px; font-weight: 800; }
 .skip-link:focus { transform: translateY(0); }
@@ -245,7 +245,7 @@ h3 { letter-spacing: -0.025em; }
 }
 .diagram-frame.light-diagram { background: #f3f5f7; }
 .diagram-frame img { display: block; width: 100%; max-height: 660px; object-fit: contain; }
-.diagram-panel figcaption {
+.diagram-panel .diagram-caption {
   display: grid;
   grid-template-columns: 0.8fr 1.15fr auto;
   gap: 32px;
@@ -254,10 +254,10 @@ h3 { letter-spacing: -0.025em; }
   color: rgba(255, 255, 255, 0.72);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.diagram-panel figcaption span { color: #ef6269; font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; }
-.diagram-panel figcaption h3 { margin: 6px 0 0; color: var(--white); font-size: 1.28rem; }
-.diagram-panel figcaption p { margin: 0; max-width: 610px; font-size: 0.88rem; }
-.diagram-panel figcaption a { color: var(--white); text-decoration: none; white-space: nowrap; border-bottom: 1px solid rgba(255, 255, 255, 0.34); font-size: 0.8rem; font-weight: 760; }
+.diagram-panel .diagram-caption span { color: #ef6269; font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; }
+.diagram-panel .diagram-caption h3 { margin: 6px 0 0; color: var(--white); font-size: 1.28rem; }
+.diagram-panel .diagram-caption p { margin: 0; max-width: 610px; font-size: 0.88rem; }
+.diagram-panel .diagram-caption a { color: var(--white); text-decoration: none; white-space: nowrap; border-bottom: 1px solid rgba(255, 255, 255, 0.34); font-size: 0.8rem; font-weight: 760; }
 
 .build { background: var(--paper); }
 .capability-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line-dark); }
@@ -355,8 +355,8 @@ h3 { letter-spacing: -0.025em; }
   .lens-switcher { grid-template-columns: 0.45fr 0.8fr 1.2fr; }
   .arch-layer { grid-template-columns: 34px 1fr; }
   .arch-layer small { grid-column: 2; text-align: left; }
-  .diagram-panel figcaption { grid-template-columns: 0.8fr 1.2fr; }
-  .diagram-panel figcaption a { grid-column: 2; justify-self: start; }
+  .diagram-panel .diagram-caption { grid-template-columns: 0.8fr 1.2fr; }
+  .diagram-panel .diagram-caption a { grid-column: 2; justify-self: start; }
   .offer { grid-template-columns: 60px 0.8fr 1.2fr; padding: 24px 0; }
   .offer > a { grid-column: 2; justify-self: start; }
   .principle-lines { grid-template-columns: 1fr 1fr; }
@@ -430,8 +430,8 @@ h3 { letter-spacing: -0.025em; }
   .problem-row p { grid-column: 2; }
   .diagram-frame { min-height: 0; padding: 10px; background-size: 28px 28px; }
   .diagram-frame img { max-height: none; }
-  .diagram-panel figcaption { grid-template-columns: 1fr; gap: 14px; padding: 22px 18px; }
-  .diagram-panel figcaption a { grid-column: 1; }
+  .diagram-panel .diagram-caption { grid-template-columns: 1fr; gap: 14px; padding: 22px 18px; }
+  .diagram-panel .diagram-caption a { grid-column: 1; }
   .capability-grid { grid-template-columns: 1fr; }
   .capability, .capability:nth-child(even) { min-height: auto; padding: 32px 0; border-right: 0; }
   .field-grid, .study-grid, .about-grid, .contact-grid { grid-template-columns: 1fr; }
@@ -502,8 +502,8 @@ h3 { letter-spacing: -0.025em; }
   .diagram-panel[hidden] { display: block !important; }
   .diagram-panel + .diagram-panel { break-before: page; }
   .diagram-frame { min-height: 0; padding: 10px; background: #fff; }
-  .diagram-panel figcaption { color: #333; background: #fff; }
-  .diagram-panel figcaption h3, .diagram-panel figcaption a { color: #111; }
+  .diagram-panel .diagram-caption { color: #333; background: #fff; }
+  .diagram-panel .diagram-caption h3, .diagram-panel .diagram-caption a { color: #111; }
   .study-copy { position: static; }
   a { text-decoration: underline; }
 }
