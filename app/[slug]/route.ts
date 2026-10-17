@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { marketingPages } from '../../lib/marketing-pages';
+import { websiteHtmlResponse } from '../../lib/http-html';
 
 export const runtime = 'nodejs';
 const origin = 'https://www.stubtec.dk';
@@ -129,8 +130,5 @@ ${marketingCss}</style>
 </body>
 </html>`;
 
-  return new Response(document, {
-    status:200,
-    headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=0, must-revalidate','X-Content-Type-Options':'nosniff'}
-  });
+  return websiteHtmlResponse(document, _request);
 }
