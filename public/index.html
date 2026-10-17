@@ -257,6 +257,17 @@
             <button id="diagram-tab-framework" type="button" role="tab" aria-selected="false" aria-controls="diagram-framework" tabindex="-1" data-diagram-target="diagram-framework"><span>05</span> Aras framework</button>
           </div>
 
+          <div class="diagram-mobile-toolbar" aria-label="Navigation mellem de fem arkitekturdiagrammer">
+            <div class="diagram-mobile-title">
+              <span class="diagram-mobile-eyebrow">SWIPE MELLEM DIAGRAMMER</span>
+              <span class="diagram-count" aria-live="polite"><strong data-diagram-current>01</strong> <span aria-hidden="true">/</span> 05</span>
+            </div>
+            <div class="diagram-mobile-arrows">
+              <button type="button" data-diagram-prev aria-label="Forrige diagram" disabled><span aria-hidden="true">←</span></button>
+              <button type="button" data-diagram-next aria-label="Næste diagram"><span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+
           <div class="diagram-stage reveal">
             <div class="diagram-panel" id="diagram-thread" role="tabpanel" aria-labelledby="diagram-tab-thread">
               <div class="diagram-frame"><img loading="lazy" decoding="async" width="1600" height="900" src="/static-resource?name=assets/diagrams/digital-thread.svg" alt="Digital thread mellem CAD, PLM, ERP, MES og service med PLM som ryggrad" /></div>
@@ -279,6 +290,14 @@
               <div class="diagram-caption"><div><span>05 / PLATFORM</span><h3>Aras Innovator framework</h3></div><p>Den modelbaserede platform separerer solution models fra services og data. Det ændrer, hvor forretningslogik placeres og vedligeholdes.</p><a href="/static-resource?name=assets/diagrams/aras-framework.svg" target="_blank" rel="noreferrer">Åbn i fuld størrelse ↗</a></div>
             </div>
           </div>
+          <nav class="diagram-mobile-dots" aria-label="Vælg arkitekturdiagram">
+            <button type="button" data-diagram-dot="diagram-thread" aria-label="Vis diagram 1: Digital thread" aria-pressed="true"></button>
+            <button type="button" data-diagram-dot="diagram-lifecycle" aria-label="Vis diagram 2: PLM lifecycle" aria-pressed="false"></button>
+            <button type="button" data-diagram-dot="diagram-operating-model" aria-label="Vis diagram 3: People, process og tools" aria-pressed="false"></button>
+            <button type="button" data-diagram-dot="diagram-transition" aria-label="Vis diagram 4: Fra Excel til Aras" aria-pressed="false"></button>
+            <button type="button" data-diagram-dot="diagram-framework" aria-label="Vis diagram 5: Aras framework" aria-pressed="false"></button>
+          </nav>
+          <p class="diagram-mobile-help">Stryg til siden for at skifte diagram. Åbn det i fuld størrelse for at zoome ind på detaljerne.</p>
         </div>
       </section>
 
