@@ -113,7 +113,7 @@ jobs:
           (async()=>{
             const browser=await puppeteer.launch({headless:true,executablePath:'/usr/bin/google-chrome-stable',args:['--no-sandbox','--disable-dev-shm-usage']});
             try {
-              for(const width of [360,393,768,1440]){
+              for(const width of [320,360,393,768,1024,1440]){
                 const page=await browser.newPage();
                 await page.setViewport({width,height:900});
                 const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -122,16 +122,42 @@ jobs:
                   const d=document.documentElement, system=document.querySelector('.system-map'), nodes=[...document.querySelectorAll('.system-map .system-node,.system-map .system-core')];
                   const outer=system.getBoundingClientRect();
                   const within=nodes.every(n=>{const b=n.getBoundingClientRect();return b.left>=outer.left-2 && b.right<=outer.right+2});
-                  return {width:innerWidth,documentWidth:d.scrollWidth,css:!!document.querySelector('style[data-stubtec-inline-css]'),diagramNodes:nodes.length,diagramInsideFrame:within,brokenImages:[...document.images].filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc)};
+                  const tablist=document.querySelector('.diagram-tabs'),buttons=[...tablist.querySelectorAll('button')];
+                  const bounds=tablist.getBoundingClientRect();
+                  const clippedTabs=buttons.filter(button=>{const r=button.getBoundingClientRect();return r.left<bounds.left-2||r.right>bounds.right+2}).map(el=>el.id);
+                  const active=document.querySelector('#diagram-thread');
+                  const mobile=active.querySelector('.diagram-mobile'),svg=active.querySelector('.diagram-frame > img');
+                  return {width:innerWidth,documentWidth:d.scrollWidth,css:!!document.querySelector('style[data-stubtec-inline-css]'),diagramNodes:nodes.length,diagramInsideFrame:within,
+                    brokenImages:[...document.images].filter(img=>img.complete&&img.naturalWidth===0).map(img=>img.currentSrc),
+                    mobileModels:document.querySelectorAll('.diagram-mobile').length,
+                    mobileModelVisible:getComputedStyle(mobile).display!=='none'&&mobile.getBoundingClientRect().height>100,
+                    sourceSvgVisible:getComputedStyle(svg).display!=='none',
+                    svgWidth:svg.getBoundingClientRect().width,svgHeight:svg.getBoundingClientRect().height,
+                    clippedTabs};
                 });
                 console.log('RESPONSIVE',width,JSON.stringify(m));
                 if(resp.status()!==200||m.documentWidth>width+1||!m.css||m.brokenImages.length)throw Error('Mobile/desktop regression '+width);
                 if(width<=393&&(!m.diagramInsideFrame||m.diagramNodes!==6))throw Error('Thread flow clipped on '+width);
+                if(m.mobileModels!==5)throw Error('Missing semantic diagram model(s)');
+                if(width<=1100&&(!m.mobileModelVisible||m.sourceSvgVisible))throw Error('Tablet/mobile reference model not visible '+width);
+                if(width>1100&&(m.mobileModelVisible||!m.sourceSvgVisible||Math.abs(m.svgHeight/m.svgWidth-9/16)>.02))throw Error('Desktop original SVG not correctly sized '+width);
+                if(width<=900&&m.clippedTabs.length)throw Error('Clipped diagram tabs '+m.clippedTabs.join(','));
                 if(errors.length)throw Error('JS errors '+errors.join(' | '));
+                await page.click('#diagram-tab-lifecycle');
+                const switched=await page.evaluate(()=>document.querySelector('#diagram-lifecycle').hidden===false&&document.querySelector('#diagram-thread').hidden===true&&document.querySelector('#diagram-tab-lifecycle').getAttribute('aria-selected')==='true');
+                if(!switched)throw Error('Tab interaction broken '+width);
+                if([393,768,1440].includes(width)){
+                  const fs=require('fs');fs.mkdirSync('responsive-previews',{recursive:true});
+                  await page.locator('.diagram-library').screenshot({path:'responsive-previews/diagram-library-'+width+'.png'});
+                }
                 if(width===393){
                   const axe=await new AxePuppeteer(page).analyze();
                   console.log('ACCESSIBILITY',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,examples:v.nodes.slice(0,8).map(n=>({target:n.target,summary:n.failureSummary,html:n.html}))}))));
                   if(axe.violations.some(v=>v.impact==='serious'||v.impact==='critical'))throw Error('Critical accessibility violation');
+                  const gallery=await page.goto('http://127.0.0.1:3177/ressourcer',{waitUntil:'load'});
+                  if(gallery.status()!==200||await page.locator('.resource-grid a[href^="/#diagram-tab-"]').count()!==5)throw Error('Missing readable resource links');
+                  await page.goto('http://127.0.0.1:3177/#diagram-tab-framework',{waitUntil:'load'});
+                  if(await page.locator('#diagram-tab-framework').getAttribute('aria-selected')!=='true')throw Error('Deep-linked diagram not selected');
                   const contact=await page.goto('http://127.0.0.1:3177/kontakt',{waitUntil:'load'});
                   if(contact.status()!==200)throw Error('Contact inaccessible');
                   const form=await page.$('#inquiry-form');if(!form)throw Error('Contact form missing');
@@ -141,3 +167,12 @@ jobs:
             }finally{await browser.close()}
           })().catch(e=>{console.error(e);process.exit(1)})
           JS
+
+      - name: Upload responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stubtec-responsive-diagram-previews
+          path: responsive-previews/
+          if-no-files-found: ignore
+          retention-days: 7
