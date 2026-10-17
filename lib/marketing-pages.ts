@@ -201,7 +201,7 @@ export const marketingPages: Record<string, MarketingPage> = {
             event.preventDefault();
             if(!form.reportValidity()) return;
             var data = new FormData(form);
-            var details = ['Navn: '+data.get('name'),'E-mail: '+data.get('email'),'Virksomhed: '+(data.get('company')||'Ikke angivet'),'Emne: '+data.get('topic'),'Tidspunkt: '+(data.get('time')||'Ikke angivet'),'','Udfordring:',String(data.get('message')||'')].join('\n');
+            var details = ['Navn: '+data.get('name'),'E-mail: '+data.get('email'),'Virksomhed: '+(data.get('company')||'Ikke angivet'),'Emne: '+data.get('topic'),'Tidspunkt: '+(data.get('time')||'Ikke angivet'),'','Udfordring:',String(data.get('message')||'')].join('\\n');
             var subject = 'PLM henvendelse: '+data.get('topic');
             document.getElementById('inquiry-status').textContent = 'Dit e-mailprogram åbnes. Gennemse og send selv beskeden; der er endnu ikke booket et møde.';
             window.location.href = 'mailto:csm@stubtec.dk?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(details);
