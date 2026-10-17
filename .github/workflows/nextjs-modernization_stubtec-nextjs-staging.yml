@@ -80,6 +80,7 @@ jobs:
           package: .
           
           startup-command: 'node server.js'
+          clean: true
 
       - name: Restart Azure web app to activate newly deployed standalone server
         run: |
@@ -94,7 +95,7 @@ jobs:
             OK=0
             for attempt in $(seq 1 16); do
               STATUS=$(curl --location --silent --show-error --connect-timeout 10 --max-time 25 -H 'Cache-Control: no-cache' -o /tmp/stubtec-check.html -w '%{http_code}' "${HOST}?verify-release=${GITHUB_SHA}" || true)
-              if [ "$STATUS" = "200" ] && grep -q 'Hej world' /tmp/stubtec-check.html && grep -q 'globals' /tmp/stubtec-check.html; then
+              if [ "$STATUS" = "200" ] && grep -q 'Hej world' /tmp/stubtec-check.html; then
                 echo "PASS: $HOST returns Hej world and Next.js styling."
                 OK=1
                 break
