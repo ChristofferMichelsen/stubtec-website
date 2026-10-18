@@ -507,3 +507,7 @@ h3 { letter-spacing: -0.025em; }
   .study-copy { position: static; }
   a { text-decoration: underline; }
 }
+
+/* Original StubTEC logo, responsive without distortion */
+.brand-logo { display:block; width:clamp(124px, 15vw, 188px); height:auto; max-height:72px; object-fit:contain; }
+@media (max-width:600px) { .brand-logo { width:142px; max-height:56px; } }
