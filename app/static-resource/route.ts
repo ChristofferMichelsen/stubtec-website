@@ -12,6 +12,19 @@ const types: Record<string, string> = {
   'styles.css': 'text/css; charset=utf-8',
   'site.js': 'text/javascript; charset=utf-8',
   'assets/christoffer-architecture-review.jpg': 'image/jpeg',
+  'assets/favicon.ico': 'image/x-icon'
+  'assets/favicon.svg': 'image/svg+xml'
+  'assets/favicon-16.png': 'image/png'
+  'assets/favicon-32.png': 'image/png'
+  'assets/favicon-48.png': 'image/png'
+  'assets/favicon-96.png': 'image/png'
+  'assets/apple-touch-icon.png': 'image/png'
+  'assets/android-chrome-192x192.png': 'image/png'
+  'assets/android-chrome-512x512.png': 'image/png'
+  'assets/stubtec-logo-header.png': 'image/png'
+  'assets/stubtec-logo-original.png': 'image/png'
+  'assets/logo-original.svg': 'image/svg+xml'
+  'assets/stubtec-mark-512.png': 'image/png'
   'assets/diagrams/digital-thread.svg': 'image/svg+xml',
   'assets/diagrams/lifecycle.svg': 'image/svg+xml',
   'assets/diagrams/people-process-tools.svg': 'image/svg+xml',
